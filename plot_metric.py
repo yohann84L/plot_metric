@@ -17,11 +17,13 @@ class BinaryClassification:
         This function prints and plots the confusion matrix.
         Normalization can be applied by setting `normalize=True`.
         """
-        if not threshold:
-            self.threshold = threshold
+        if threshold is None:
+            t = self.threshold
+        else:
+            t = threshold
 
         # Define the confusion matrix
-        y_pred_class = [1 if y_i > self.threshold else 0 for y_i in self.y_pred]
+        y_pred_class = [1 if y_i > t else 0 for y_i in self.y_pred]
         cm = confusion_matrix(self.y_true, y_pred_class, labels=self.labels)
 
         if normalize:
@@ -52,15 +54,17 @@ class BinaryClassification:
         import seaborn as sns
         sns.set_style('darkgrid')
 
-        if not threshold:
-            self.threshold = threshold
+        if threshold is None:
+            t = self.threshold
+        else:
+            t = threshold
 
         # Compute ROC Curve
         fpr, tpr, thresh = roc_curve(self.y_true, self.y_pred)
         roc_auc = auc(fpr, tpr)
 
         # Compute the y & x axis to trace the threshold
-        idx_thresh, idy_thresh = fpr[argmin(abs(thresh - self.threshold))], tpr[argmin(abs(thresh - self.threshold))]
+        idx_thresh, idy_thresh = fpr[argmin(abs(thresh - t))], tpr[argmin(abs(thresh - t))]
 
         # Plot roc curve
         plt.figure(figsize=size)
@@ -74,16 +78,16 @@ class BinaryClassification:
 
         if idx_thresh > 0.5 and idy_thresh > 0.5:
             plt.text(x=idx_thresh - x_text_margin, y=idy_thresh - y_text_margin,
-                     s='Threshold : {:.2f}'.format(self.threshold))
+                     s='Threshold : {:.2f}'.format(t))
         elif idx_thresh <= 0.5 and idy_thresh <= 0.5:
             plt.text(x=idx_thresh + x_text_margin, y=idy_thresh + y_text_margin,
-                     s='Threshold : {:.2f}'.format(self.threshold))
+                     s='Threshold : {:.2f}'.format(t))
         elif idx_thresh <= 0.5 < idy_thresh:
             plt.text(x=idx_thresh + x_text_margin, y=idy_thresh - y_text_margin,
-                     s='Threshold : {:.2f}'.format(self.threshold))
+                     s='Threshold : {:.2f}'.format(t))
         elif idx_thresh > 0.5 >= idy_thresh:
             plt.text(x=idx_thresh - x_text_margin, y=idy_thresh + y_text_margin,
-                     s='Threshold : {:.2f}'.format(self.threshold))
+                     s='Threshold : {:.2f}'.format(t))
 
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
@@ -91,7 +95,7 @@ class BinaryClassification:
         plt.legend(loc="lower right")
         plt.show()
 
-    def plot_class_ditribution(self, threshold=None, alpha=.3, jitter=.3):
+    def plot_class_distribution(self, threshold=None, size=(5, 5), alpha=.3, jitter=.3):
         from pandas import DataFrame
         import seaborn as sns
         sns.set_style('darkgrid')
@@ -117,11 +121,85 @@ class BinaryClassification:
         pred_df['type'] = pred_df['pred']
         pred_df['type'] = pred_df.apply(lambda x: _compute_thresh(x, t), axis=1)
 
+        plt.figure(figsize=size)
         sns.set_palette(sns.color_palette("husl", 8))
-
         sns.violinplot(x='class', y='pred', data=pred_df, inner=None, color="white", cut=0)
         sns.stripplot(x='class', y='pred', hue='type', data=pred_df, jitter=jitter, alpha=alpha, size=4)
         plt.axhline(y=t, color='red')
         plt.title('Threshold at {:.2f}'.format(t))
         plt.show()
 
+    def plot_roc_and_distribution(self, threshold=.5, linewidth=2, size=(10, 5), y_text_margin=0.05,
+                                  x_text_margin=0.25, alpha=.3, jitter=.3):
+        from sklearn.metrics import roc_curve, auc
+        import seaborn as sns
+        from pandas import DataFrame
+        sns.set_style('darkgrid')
+
+        if threshold is None:
+            t = self.threshold
+        else:
+            t = threshold
+
+        # Compute ROC Curve
+        fpr, tpr, thresh = roc_curve(self.y_true, self.y_pred)
+        roc_auc = auc(fpr, tpr)
+
+        # Compute the y & x axis to trace the threshold
+        idx_thresh, idy_thresh = fpr[argmin(abs(thresh - t))], tpr[argmin(abs(thresh - t))]
+
+        # Plot roc curve
+        fig, [ax1, ax2] = plt.subplots(nrows=1, ncols=2, figsize=size)
+        ax1.plot(fpr, tpr, color='black',
+                 lw=linewidth, label='ROC curve (area = %0.2f)' % roc_auc)
+
+        # Plot reference line
+        ax1.plot([0, 1], [0, 1], color='red', lw=linewidth, linestyle='--')
+        ax1.axhline(y=idy_thresh, color='black', linestyle=':', lw=linewidth)
+        ax1.axvline(x=idx_thresh, color='black', linestyle=':', lw=linewidth)
+
+        if idx_thresh > 0.5 and idy_thresh > 0.5:
+            ax1.text(x=idx_thresh - x_text_margin, y=idy_thresh - y_text_margin,
+                     s='Threshold : {:.2f}'.format(t))
+        elif idx_thresh <= 0.5 and idy_thresh <= 0.5:
+            ax1.text(x=idx_thresh + x_text_margin, y=idy_thresh + y_text_margin,
+                     s='Threshold : {:.2f}'.format(t))
+        elif idx_thresh <= 0.5 < idy_thresh:
+            ax1.text(x=idx_thresh + x_text_margin, y=idy_thresh - y_text_margin,
+                     s='Threshold : {:.2f}'.format(t))
+        elif idx_thresh > 0.5 >= idy_thresh:
+            ax1.text(x=idx_thresh - x_text_margin, y=idy_thresh + y_text_margin,
+                     s='Threshold : {:.2f}'.format(t))
+
+        ax1.set_xlabel('False Positive Rate')
+        ax1.set_ylabel('True Positive Rate')
+        ax1.set_title('Receiver Operating Characteristic')
+        ax1.legend(loc="lower right")
+
+        if threshold is None:
+            t = self.threshold
+        else:
+            t = threshold
+
+        def _compute_thresh(row, _threshold):
+            if (row['pred'] >= _threshold) & (row['class'] == 1):
+                return "TP"
+            elif (row['pred'] >= _threshold) & (row['class'] == 0):
+                return 'FP'
+            elif (row['pred'] < _threshold) & (row['class'] == 1):
+                return 'FN'
+            elif (row['pred'] < _threshold) & (row['class'] == 0):
+                return 'TN'
+
+        pred_df = DataFrame({'class': self.y_true,
+                             'pred': self.y_pred})
+
+        pred_df['type'] = pred_df['pred']
+        pred_df['type'] = pred_df.apply(lambda x: _compute_thresh(x, t), axis=1)
+
+        sns.set_palette(sns.color_palette("husl", 8))
+        sns.violinplot(x='class', y='pred', data=pred_df, inner=None, color="white", cut=0)
+        sns.stripplot(x='class', y='pred', hue='type', data=pred_df, jitter=jitter, alpha=alpha, size=4)
+        ax2.axhline(y=t, color='red')
+        ax2.set_title('Threshold at {:.2f}'.format(t))
+        plt.show()
