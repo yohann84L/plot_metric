@@ -73,6 +73,7 @@ We can now use ``plot_metric`` to plot ROC Curve, distribution class and classif
 
 
 .. image:: example/images/example_binary_classification.png
+    :width: 150
     :scale: 50
 
 
