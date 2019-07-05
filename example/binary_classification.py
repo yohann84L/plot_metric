@@ -35,6 +35,8 @@ plt.subplot(223)
 bc.plot_confusion_matrix()
 plt.subplot(224)
 bc.plot_confusion_matrix(normalize=True)
+
+plt.savefig('images/example_binary_classification.png')
 plt.show()
 
 bc.print_report()
