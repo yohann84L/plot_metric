@@ -73,7 +73,6 @@ We can now use ``plot_metric`` to plot ROC Curve, distribution class and classif
 
 
 .. image:: example/images/example_binary_classification.png
-    :width: 150px
 
 .. |PyPI-Versions| image:: https://img.shields.io/badge/plot__metric-v0.0.2-blue.svg
     :target: https://pypi.org/project/plot-metric/

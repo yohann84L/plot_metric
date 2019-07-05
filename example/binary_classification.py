@@ -26,14 +26,14 @@ y_pred = gnb.predict_proba(X_test)[:,1]
 # Visualisation with plot_metric :
 bc = BinaryClassification(y_test, y_pred, labels=[0, 1])
 
-plt.figure(figsize=(8,8))
-plt.subplot(221)
+plt.figure(figsize=(16,4))
+plt.subplot(141)
 bc.plot_roc()
-plt.subplot(222)
+plt.subplot(142)
 bc.plot_class_distribution()
-plt.subplot(223)
+plt.subplot(143)
 bc.plot_confusion_matrix()
-plt.subplot(224)
+plt.subplot(144)
 bc.plot_confusion_matrix(normalize=True)
 
 plt.savefig('images/example_binary_classification.png')
