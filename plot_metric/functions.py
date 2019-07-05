@@ -4,6 +4,7 @@ from sklearn.metrics import confusion_matrix
 from itertools import product
 
 import seaborn as sns
+
 sns.set_style('darkgrid')
 
 
@@ -160,3 +161,18 @@ class BinaryClassification:
         sns.stripplot(x='class', y='pred', hue='type', data=pred_df, jitter=jitter, alpha=alpha, size=4)
         plt.axhline(y=t, color='red')
         plt.title('Threshold at {:.2f}'.format(t))
+
+    def print_report(self, threshold=.5):
+        from sklearn.metrics import classification_report
+
+        if threshold is None:
+            t = self.threshold
+        else:
+            t = threshold
+
+        y_pred_class = [1 if y_i > t else 0 for y_i in self.y_pred]
+
+        print("                   ________________________")
+        print("                  |  Classification Report |")
+        print("                   ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+        print(classification_report(self.y_true, y_pred_class, target_names=['0', '1']))

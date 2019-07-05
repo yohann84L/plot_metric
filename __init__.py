@@ -1,2 +1,1 @@
-from plot_metric import BinaryClassification
-from plot_metric import MultiClassClassification
+from plot_metric.functions import BinaryClassification
