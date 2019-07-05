@@ -26,7 +26,7 @@ y_pred = gnb.predict_proba(X_test)[:,1]
 # Visualisation with plot_metric :
 bc = BinaryClassification(y_test, y_pred, labels=[0, 1])
 
-plt.figure(figsize=(10,9))
+plt.figure(figsize=(8,8))
 plt.subplot(221)
 bc.plot_roc()
 plt.subplot(222)
