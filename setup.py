@@ -1,11 +1,11 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.rst", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name='plot_metric',
-    version='0.0.1',
+    version='0.0.3',
     scripts=['plot_metric_package'],
     author="Yohann Lereclus",
     author_email="lereclus84L@gmail.com",
