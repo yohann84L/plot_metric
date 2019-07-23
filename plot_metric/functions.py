@@ -1,7 +1,11 @@
 import matplotlib.pyplot as plt
-from numpy import newaxis, arange, argmin
-from sklearn.metrics import confusion_matrix
-from itertools import product
+from numpy import newaxis, arange, argmin, unique, concatenate, zeros_like, argmax, linspace
+from scipy import interp
+from sklearn.metrics import confusion_matrix, precision_recall_curve, auc, roc_curve, average_precision_score
+from itertools import product, cycle
+import colorlover as cl
+import random
+from statistics import mean
 
 import seaborn as sns
 
@@ -52,45 +56,7 @@ class BinaryClassification:
         plt.ylabel('True label')
         plt.xlabel('Predicted label')
 
-    def plot_both_matrix(self, threshold=None, normalize=False, title='Confusion matrix', cmap=plt.cm.Reds):
-        """
-        This function prints and plots the confusion matrix.
-        Normalization can be applied by setting `normalize=True`.
-        """
-        if threshold is None:
-            t = self.threshold
-        else:
-            t = threshold
-
-        # Define the confusion matrix
-        y_pred_class = [1 if y_i > t else 0 for y_i in self.y_pred]
-        cm = confusion_matrix(self.y_true, y_pred_class, labels=self.labels)
-
-        if normalize:
-            cm = cm.astype('float') / cm.sum(axis=1)[:, newaxis]
-            title = title + ' normalized'
-
-        plt.imshow(cm, interpolation='nearest', cmap=cmap)
-        plt.title(title)
-        plt.colorbar()
-        tick_marks = arange(len(self.labels))
-        plt.xticks(tick_marks, self.labels, rotation=45)
-        plt.yticks(tick_marks, self.labels)
-
-        fmt = '.2f' if normalize else 'd'
-        thresh = cm.max() / 2.
-        for i, j in product(range(cm.shape[0]), range(cm.shape[1])):
-            plt.text(j, i, format(cm[i, j], fmt),
-                     horizontalalignment="center",
-                     color="white" if cm[i, j] > thresh else "black")
-
-        plt.tight_layout()
-        plt.ylabel('True label')
-        plt.xlabel('Predicted label')
-
-    def plot_roc(self, threshold=None, linewidth=2, y_text_margin=0.05, x_text_margin=0.3):
-        from sklearn.metrics import roc_curve, auc
-
+    def plot_roc(self, threshold=None, plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.3):
         if threshold is None:
             t = self.threshold
         else:
@@ -109,28 +75,111 @@ class BinaryClassification:
 
         # Plot reference line
         plt.plot([0, 1], [0, 1], color='red', lw=linewidth, linestyle='--')
-        plt.axhline(y=idy_thresh, color='black', linestyle=':', lw=linewidth)
-        plt.axvline(x=idx_thresh, color='black', linestyle=':', lw=linewidth)
+        # Plot threshold
+        if plot_threshold:
+            # Plot vertical and horizontal line
+            plt.axhline(y=idy_thresh, color='black', linestyle=':', lw=linewidth)
+            plt.axvline(x=idx_thresh, color='black', linestyle=':', lw=linewidth)
 
-        if idx_thresh > 0.5 and idy_thresh > 0.5:
-            plt.text(x=idx_thresh - x_text_margin, y=idy_thresh - y_text_margin,
-                     s='Threshold : {:.2f}'.format(t))
-        elif idx_thresh <= 0.5 and idy_thresh <= 0.5:
-            plt.text(x=idx_thresh + x_text_margin, y=idy_thresh + y_text_margin,
-                     s='Threshold : {:.2f}'.format(t))
-        elif idx_thresh <= 0.5 < idy_thresh:
-            plt.text(x=idx_thresh + x_text_margin, y=idy_thresh - y_text_margin,
-                     s='Threshold : {:.2f}'.format(t))
-        elif idx_thresh > 0.5 >= idy_thresh:
-            plt.text(x=idx_thresh - x_text_margin, y=idy_thresh + y_text_margin,
-                     s='Threshold : {:.2f}'.format(t))
+            # Plot text threshold
+            if idx_thresh > 0.5 and idy_thresh > 0.5:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh - y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh <= 0.5 and idy_thresh <= 0.5:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh + y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh <= 0.5 < idy_thresh:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh - y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh > 0.5 >= idy_thresh:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh + y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
 
-        plt.plot(idx_thresh, idy_thresh, 'ro')
+            # Plot redpoint of threshold on the ROC curve
+            plt.plot(idx_thresh, idy_thresh, 'ro')
 
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
         plt.title('Receiver Operating Characteristic')
         plt.legend(loc="lower right")
+
+    def plot_precision_recall_curve(self, threshold=None, plot_threshold=True,
+                                    linewidth=2, f1_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7,
+                                    y_text_margin=0.03, x_text_margin=0.2):
+        if f1_iso is None:
+            f1_iso = []
+        if threshold is None:
+            t = self.threshold
+        else:
+            t = threshold
+
+        # List for legends
+        lines = []
+        labels = []
+
+        # Compute precision and recall
+        prec, recall, thresh = precision_recall_curve(self.y_true, self.y_pred)
+        # Compute area
+        pr_auc = average_precision_score(self.y_true, self.y_pred)
+        # Compute the y & x axis to trace the threshold
+        idx_thresh, idy_thresh = recall[argmin(abs(thresh - t))], prec[argmin(abs(thresh - t))]
+
+        # Plot roc curve
+        l, = plt.plot(recall, prec, color='black', lw=linewidth)
+        lines.append(l)
+        labels.append('PR curve (area = {})'.format(round(pr_auc, 2)))
+
+        # Plot mean precision
+        mean_prec = mean(prec)
+        l, = plt.plot([0, 1], [mean_prec, mean_prec], color='red',
+                      lw=linewidth, linestyle='--')
+        lines.append(l)
+        labels.append('Mean precision = {}'.format(round(mean_prec, 2)))
+
+        # F1-iso
+        if len(f1_iso) > 0:
+            for f_score in f1_iso:
+                x = linspace(0.005, 1, 100)
+                y = f_score * x / (2 * x - f_score)
+                l, = plt.plot(x[y >= 0], y[y >= 0], color='grey', linestyle=':', alpha=iso_alpha)
+                plt.text(s='f1={0:0.1f}'.format(f_score), x=0.9, y=y[-10] + 0.02, alpha=iso_alpha)
+            lines.append(l)
+            labels.append('iso-f1 curves')
+
+            plt.ylim([0.0, 1.05])
+
+        # Plot threshold
+        if plot_threshold:
+            # Plot vertical and horizontal line
+            plt.axhline(y=idy_thresh, color='black', linestyle=':', lw=linewidth)
+            plt.axvline(x=idx_thresh, color='black', linestyle=':', lw=linewidth)
+
+            # Plot text threshold
+            if idx_thresh > 0.5 and idy_thresh > 0.5:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh - y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh <= 0.5 and idy_thresh <= 0.5:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh + y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh <= 0.5 < idy_thresh:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh - y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh > 0.5 >= idy_thresh:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh + y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+
+            # Plot redpoint of threshold on the ROC curve
+            plt.plot(idx_thresh, idy_thresh, 'ro')
+
+        # Axis and legends
+        plt.xlim([0.0, 1.0])
+        plt.legend(lines, labels)
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        if plot_threshold:
+            plt.title('Precision and Recall Curve (Threshold = {})'.format(round(t, 2)))
+        else:
+            plt.title('Precision and Recall Curve')
 
     def plot_class_distribution(self, threshold=None, alpha=.3, jitter=.3):
         from pandas import DataFrame
@@ -175,4 +224,4 @@ class BinaryClassification:
         print("                   ________________________")
         print("                  |  Classification Report |")
         print("                   ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
-        print(classification_report(self.y_true, y_pred_class, target_names=['0', '1']))
+        print(classification_report(self.y_true, y_pred_class, target_names=list(map(str, self.labels))))
