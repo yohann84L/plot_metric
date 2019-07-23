@@ -31,11 +31,18 @@ bc = BinaryClassification(y_test, y_pred, labels=[0, 1])
 #plt.figure(figsize=(8,8))
 #bc.plot_precision_recall_curve(plot_threshold=False)
 
+param_pr_plot = {
+    'c_pr_curve':'blue',
+    'c_mean_prec':'cyan',
+    'c_thresh':'red',
+    'c_f1_iso':'green'
+}
+
 plt.figure(figsize=(15,10))
 plt.subplot2grid(shape=(2,6), loc=(0,0), colspan=2)
 bc.plot_roc()
 plt.subplot2grid((2,6), (0,2), colspan=2)
-bc.plot_precision_recall_curve()
+bc.plot_precision_recall_curve(**param_pr_plot)
 plt.subplot2grid((2,6), (0,4), colspan=2)
 bc.plot_class_distribution()
 plt.subplot2grid((2,6), (1,1), colspan=2)
