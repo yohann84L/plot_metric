@@ -64,6 +64,20 @@ class BinaryClassification:
                                 'colorbar': True,
                                 'label_rotation': 45}
 
+    __param_roc_curve = {'threshold': None,
+                         'plot_threshold': True,
+                         'linewidth': 2,
+                         'y_text_margin': 0.05,
+                         'x_text_margin': 0.2,
+                         'c_roc_curve': 'black',
+                         'c_random_guess': 'red',
+                         'c_thresh_lines': 'black',
+                         'ls_roc_curve': '-',
+                         'ls_thresh_lines': ':',
+                         'ls_random_guess': '--',
+                         'title': 'Receiver Operating Characteristic',
+                         'loc_legend': 'lower_right'}
+
     def __init__(self, y_true, y_pred, labels, threshold=0.5, seaborn_style='darkgrid'):
         self.y_true = y_true
         self.y_pred = y_pred
@@ -87,11 +101,13 @@ class BinaryClassification:
         param_dict : dict
             Dictionnary containing parameters for the given function and their default value.
         """
-        param_dict = {}
+
         if function.__name__ is "plot_precision_recall_curve":
             param_dict = self.__param_precision_recall_curve
         elif function.__name__ is "plot_confusion_matrix":
             param_dict = self.__param_confusion_matrix
+        elif function.__name__ is "plot_roc_curve":
+            param_dict = self.__param_roc_curve
         else:
             print("Wrong function given, following functions are available : ")
             for func in filter(lambda x: callable(x), BinaryClassification.__dict__.values()):
@@ -168,10 +184,10 @@ class BinaryClassification:
 
         return cm
 
-    def plot_roc(self, threshold=None, plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.2,
-                 c_roc_curve='black',  c_random_guess='red', c_thresh_lines='black', ls_roc_curve='-',
-                 ls_thresh_lines=':', ls_random_guess='--', title='Receiver Operating Characteristic',
-                 loc_legend='lower_right'):
+    def plot_roc_curve(self, threshold=None, plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.2,
+                       c_roc_curve='black', c_random_guess='red', c_thresh_lines='black', ls_roc_curve='-',
+                       ls_thresh_lines=':', ls_random_guess='--', title='Receiver Operating Characteristic',
+                       loc_legend='lower_right'):
         """
         Compute and plot the ROC (Receiver Operating Characteristics) curve but also AUC (Area Under The Curve).
 
