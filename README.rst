@@ -1,7 +1,7 @@
 plot_metric
 ===========
 
-|PyPI-Versions|
+|PyPI-Versions| |doc_badge|
 
 Librairie to simplify plotting of metric like ROC curve, confusion matrix etc..
 
@@ -76,4 +76,7 @@ We can now use ``plot_metric`` to plot ROC Curve, distribution class and classif
 
 .. |PyPI-Versions| image:: https://img.shields.io/badge/plot__metric-v0.0.3-blue.svg
     :target: https://pypi.org/project/plot-metric/
-    
+
+.. |doc_badge| image:: https://readthedocs.org/projects/plot-metric/badge/?version=latest
+    :target: https://plot-metric.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
