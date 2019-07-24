@@ -166,7 +166,8 @@ class BinaryClassification:
                                     fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7, y_text_margin=0.03,
                                     x_text_margin=0.2, c_pr_curve='black', c_mean_prec='red', c_thresh='black',
                                     c_f1_iso='grey', c_thresh_point='red', ls_pr_curve='-', ls_mean_prec='--',
-                                    ls_thresh=':', ls_fscore_iso=':', marker_pr_curve=None):
+                                    ls_thresh=':', ls_fscore_iso=':', marker_pr_curve=None,
+                                    title='Precision and Recall Curve'):
         """
         Compute and plot the precision-recall curve.
 
@@ -182,52 +183,74 @@ class BinaryClassification:
 
         Parameters
         ----------
-        :param threshold: float, default=0.5
+        threshold : float, default=0.5
             Threshold to determnine the rate between positive and negative values of the classification.
-        :param plot_threshold: boolean, default=True
+            
+        plot_threshold : boolean, default=True
             Plot or not precision and recall lines for the given threshold.
-        :param beta: float, default=1,
+            
+        beta : float, default=1,
             Set beta to another float to use a different f_beta score. See definition of f_beta-score
             for more information : https://en.wikipedia.org/wiki/F1_score
-        :param linewidth: float, default=2
-        :param fscore_iso: array, list, default=[0.2, 0.4, 0.6, 0.8]
+            
+        linewidth : float, default=2
+        
+        fscore_iso : array, list, default=[0.2, 0.4, 0.6, 0.8]
             List of float f1-score. Set to None or empty list to remove plotting of iso.
-        :param iso_alpha: float, default=0.7
+            
+        iso_alpha : float, default=0.7
             Transparency of iso-f1.
-        :param y_text_margin: float, default=0.03
+            
+        y_text_margin : float, default=0.03
             Margin (y) of text threshold.
-        :param x_text_margin: float, default=0.2
+            
+        x_text_margin : float, default=0.2
             Margin (x) of text threshold.
-        :param c_pr_curve: string, default='black'
+            
+        c_pr_curve : string, default='black'
             Define the color of precision-recall curve.
-        :param c_mean_prec: string, default='red'
+            
+        c_mean_prec : string, default='red'
             Define the color of mean precision line.
-        :param c_thresh: string, default='black'
+            
+        c_thresh : string, default='black'
             Define the color of threshold lines.
-        :param c_f1_iso: string, default='grey'
+            
+        c_f1_iso : string, default='grey'
             Define the color of iso-f1 curve.
-        :param c_thresh_point: string, default='red'
+            
+        c_thresh_point : string, default='red'
             Define the color of threshold point.
-        :param ls_pr_curve: string, default='-'
+            
+        ls_pr_curve : string, default='-'
             Define the linestyle of precision-recall curve.
-        :param ls_mean_prec: string, default='--'
+            
+        ls_mean_prec : string, default='--'
             Define the linestyle of mean precision line.
-        :param ls_thresh: string, default=':'
+            
+        ls_thresh : string, default=':'
             Define the linestyle of threshold lines.
-        :param ls_fscore_iso: string, default=':'
+            
+        ls_fscore_iso : string, default=':'
             Define the linestyle of iso-f1 curve.
-        :param marker_pr_curve: string, default=None
+            
+        marker_pr_curve : string, default=None
             Define the marker of precision-recall curve.
+            
+        title : string, default="Precision and Recall Curve"
+            Set title of the figure.
 
         Returns
         -------
-        :return prec: array, shape = [n_thresholds + 1]
+        prec : array, shape = [n_thresholds + 1]
             Precision values such that element i is the precision of
             predictions with score >= thresholds[i] and the last element is 1.
-        :return recall : array, shape = [n_thresholds + 1]
+            
+        recall : array, shape = [n_thresholds + 1]
             Decreasing recall values such that element i is the recall of
             predictions with score >= thresholds[i] and the last element is 0.
-        :return thresh : array, shape = [n_thresholds <= len(np.unique(y_pred))]
+            
+        thresh : array, shape = [n_thresholds <= len(np.unique(y_pred))]
             Increasing thresholds on the decision function used to compute
             precision and recall.
         """
@@ -304,9 +327,9 @@ class BinaryClassification:
         plt.xlabel('Recall')
         plt.ylabel('Precision')
         if plot_threshold:
-            plt.title('Precision and Recall Curve (Threshold = {})'.format(round(t, 2)))
+            plt.title('{} (Threshold = {})'.format(title, round(t, 2)))
         else:
-            plt.title('Precision and Recall Curve')
+            plt.title(title)
 
         return prec, recall, thresh
 
