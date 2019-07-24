@@ -14,6 +14,29 @@ import pandas as pd
 
 
 class BinaryClassification:
+    """
+    Initialize class.
+
+    Parameters
+    ----------
+    y_true : array, list, shape = [n_sample]
+        True binary labels.
+    y_pred : array, list, shape = [n_sample]
+        Target scores, can either be probability estimates of the positive
+        class, confidence values, or non-thresholded measure of decisions
+        (as returned by "decision_function" on some classifiers).
+    labels : array, list, shape = [n_class]
+        String or int of to define targeted classes.
+    threshold : float [0-1], default=0.5,
+        Classification threshold (or decision threshold).
+        More information about threshold :
+        - https://developers.google.com/machine-learning/crash-course/classification/thresholding
+        - https://en.wikipedia.org/wiki/Threshold_model
+    seaborn_style : 'string'
+        Set the style of seaborn library, preset available with
+        seaborn : darkgrid, whitegrid, dark, white, and ticks.
+        See https://seaborn.pydata.org/tutorial/aesthetics.html#seaborn-figure-styles for more info.
+    """
     __param_precision_recall_curve = {'threshold': None,
                                       'plot_threshold': True,
                                       'beta': 1,
@@ -41,29 +64,6 @@ class BinaryClassification:
                                 'label_rotation': 45}
 
     def __init__(self, y_true, y_pred, labels, threshold=0.5, seaborn_style='darkgrid'):
-        """
-        Initialize class.
-
-        Parameters
-        ----------
-        y_true : array, list, shape = [n_sample]
-            True binary labels.
-        y_pred : array, list, shape = [n_sample]
-            Target scores, can either be probability estimates of the positive
-            class, confidence values, or non-thresholded measure of decisions
-            (as returned by "decision_function" on some classifiers).
-        labels : array, list, shape = [n_class]
-            String or int of to define targeted classes.
-        threshold : float [0-1], default=0.5,
-            Classification threshold (or decision threshold).
-            More information about threshold :
-            - https://developers.google.com/machine-learning/crash-course/classification/thresholding
-            - https://en.wikipedia.org/wiki/Threshold_model
-        seaborn_style : 'string'
-            Set the style of seaborn library, preset available with
-            seaborn : darkgrid, whitegrid, dark, white, and ticks.
-            See https://seaborn.pydata.org/tutorial/aesthetics.html#seaborn-figure-styles for more info.
-        """
         self.y_true = y_true
         self.y_pred = y_pred
         self.labels = labels
