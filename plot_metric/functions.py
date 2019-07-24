@@ -8,6 +8,7 @@ import random
 from statistics import mean
 import seaborn as sns
 from pprint import pprint
+import pandas as pd
 
 sns.set_style('darkgrid')
 
@@ -39,7 +40,7 @@ class BinaryClassification:
         self.labels = labels
         self.threshold = threshold
 
-    def get_function_parameters(self, function):
+    def get_function_parameters(self, function, as_df=False):
         """
         Function to get all available parameters for a given function.
 `
@@ -48,6 +49,8 @@ class BinaryClassification:
         -------
         :param function: func
             Function parameter's wanted.
+        :param as_df: boolean, default=False
+            Set to True to return a dataframe with parameters instead of dictionnary.
 
         Returns
         -------
@@ -55,7 +58,10 @@ class BinaryClassification:
             Dictionnary containing parameters for the given function and their default value.
         """
         if function.__name__ is "plot_precision_recall_curve":
-            return self.__param_precision_recall_curve
+            if as_df:
+                return pd.DataFrame.from_dict(self.__param_precision_recall_curve, orient='index')
+            else:
+                return self.__param_precision_recall_curve
 
     def plot_confusion_matrix(self, threshold=None, normalize=False, title='Confusion matrix', cmap=plt.cm.Reds):
         """
