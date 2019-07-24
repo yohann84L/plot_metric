@@ -1,49 +1,159 @@
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
-from numpy import newaxis, arange, argmin, unique, concatenate, zeros_like, argmax
+from numpy import newaxis, arange, argmin, unique, concatenate, zeros_like, argmax, linspace
 from scipy import interp
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_recall_curve, auc, roc_curve, average_precision_score
 from itertools import product, cycle
 import colorlover as cl
 import random
-
+from statistics import mean
 import seaborn as sns
-
-sns.set_style('darkgrid')
+from pprint import pprint
+import pandas as pd
 
 
 class BinaryClassification:
-    def __init__(self, y_true, y_pred, labels, threshold=0.5):
-        '''Constructor of the class'''
+    __param_precision_recall_curve = {'threshold': None,
+                                      'plot_threshold': True,
+                                      'beta': 1,
+                                      'linewidth': 2,
+                                      'fscore_iso': [0.2, 0.4, 0.6, 0.8],
+                                      'iso_alpha': 0.7,
+                                      'y_text_margin': 0.03,
+                                      'x_text_margin': 0.2,
+                                      'c_pr_curve': 'black',
+                                      'c_mean_prec': 'red',
+                                      'c_thresh': 'black',
+                                      'c_f1_iso': 'grey',
+                                      'c_thresh_point': 'red',
+                                      'ls_pr_curve': '-',
+                                      'ls_mean_prec': '--',
+                                      'ls_thresh': ':',
+                                      'ls_fscore_iso': ':',
+                                      'marker_pr_curve': None}
+
+    __param_confusion_matrix = {'threshold': None,
+                                'normalize': False,
+                                'title': 'Confusion matrix',
+                                'cmap': plt.cm.Reds,
+                                'colorbar': True,
+                                'label_rotation': 45}
+
+    def __init__(self, y_true, y_pred, labels, threshold=0.5, seaborn_style='darkgrid'):
+        """
+        Initialize class.
+
+        Parameters
+        ----------
+        y_true : array, list, shape = [n_sample]
+            True binary labels.
+        y_pred : array, list, shape = [n_sample]
+            Target scores, can either be probability estimates of the positive
+            class, confidence values, or non-thresholded measure of decisions
+            (as returned by "decision_function" on some classifiers).
+        labels : array, list, shape = [n_class]
+            String or int of to define targeted classes.
+        threshold : float [0-1], default=0.5,
+            Classification threshold (or decision threshold).
+            More information about threshold :
+            - https://developers.google.com/machine-learning/crash-course/classification/thresholding
+            - https://en.wikipedia.org/wiki/Threshold_model
+        seaborn_style : 'string'
+            Set the style of seaborn library, preset available with
+            seaborn : darkgrid, whitegrid, dark, white, and ticks.
+            See https://seaborn.pydata.org/tutorial/aesthetics.html#seaborn-figure-styles for more info.
+        """
         self.y_true = y_true
         self.y_pred = y_pred
         self.labels = labels
         self.threshold = threshold
+        sns.set_style(seaborn_style)
 
-    def plot_confusion_matrix(self, threshold=None, normalize=False, title='Confusion matrix', cmap=plt.cm.Reds):
+    def get_function_parameters(self, function, as_df=False):
         """
-        This function prints and plots the confusion matrix.
-        Normalization can be applied by setting `normalize=True`.
+        Function to get all available parameters for a given function.
+
+        Parameters
+        ----------
+        function : func
+            Function parameter's wanted.
+        as_df : boolean, default=False
+            Set to True to return a dataframe with parameters instead of dictionnary.
+
+        Returns
+        -------
+        param_dict : dict
+            Dictionnary containing parameters for the given function and their default value.
+        """
+        param_dict = {}
+        if function.__name__ is "plot_precision_recall_curve":
+            param_dict = self.__param_precision_recall_curve
+        elif function.__name__ is "plot_confusion_matrix":
+            param_dict = self.__param_confusion_matrix
+        else:
+            print("Wrong function given, following functions are available : ")
+            for func in filter(lambda x: callable(x), BinaryClassification.__dict__.values()):
+                print(func.__name__)
+            return [func() for func in filter(lambda x: callable(x), BinaryClassification.__dict__.values())]
+
+        if as_df:
+            return pd.DataFrame.from_dict(param_dict, orient='index')
+        else:
+            return param_dict
+
+    def plot_confusion_matrix(self, threshold=None, normalize=False, title='Confusion matrix', cmap=plt.cm.Reds,
+                              colorbar=True, label_rotation=45):
+        """
+        Plots the confusion matrix.
+
+        Parameters
+        ----------
+        threshold : float, default=0.5
+            Threshold to determnine the rate between positive and negative values of the classification.
+        normalize : bool, default=False
+            Set to True to normalize matrix and make matrix coefficient between 0 and 1.
+        title : string, default="Confusion matrix",
+            Set title of the plot.
+        cmap : colormap, default=plt.cm.Reds
+            Colormap of the matrix. See https://matplotlib.org/examples/color/colormaps_reference.html to find all
+            available colormap.
+        colorbar : bool, default=True
+            Display color bar beside matrix.
+        label_rotation : int, default=45
+            Degree of rotation for x_axis labels.
+
+        Returns
+        -------
+        cm : array, shape=[n_classes, n_classes]
+            Return confusion_matrix computed by sklearn.metrics.confusion_matrix
         """
         if threshold is None:
             t = self.threshold
         else:
             t = threshold
 
-        # Define the confusion matrix
+        # Convert prediction probility into class
         y_pred_class = [1 if y_i > t else 0 for y_i in self.y_pred]
-        cm = confusion_matrix(self.y_true, y_pred_class, labels=self.labels)
 
+        # Define the confusion matrix
+        cm = confusion_matrix(self.y_true, y_pred_class, labels=[0,1])
+
+        # Normalize matrix if choosen
         if normalize:
             cm = cm.astype('float') / cm.sum(axis=1)[:, newaxis]
             title = title + ' normalized'
 
+        # Compute plot
         plt.imshow(cm, interpolation='nearest', cmap=cmap)
         plt.title(title)
-        plt.colorbar()
+        if colorbar:
+            plt.colorbar()
         tick_marks = arange(len(self.labels))
-        plt.xticks(tick_marks, self.labels, rotation=45)
+        plt.xticks(tick_marks, self.labels, rotation=label_rotation)
         plt.yticks(tick_marks, self.labels)
 
+        # Display text into matrix
         fmt = '.2f' if normalize else 'd'
         thresh = cm.max() / 2.
         for i, j in product(range(cm.shape[0]), range(cm.shape[1])):
@@ -55,9 +165,9 @@ class BinaryClassification:
         plt.ylabel('True label')
         plt.xlabel('Predicted label')
 
-    def plot_roc(self, threshold=None, linewidth=2, y_text_margin=0.05, x_text_margin=0.3):
-        from sklearn.metrics import roc_curve, auc
+        return cm
 
+    def plot_roc(self, threshold=None, plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.3):
         if threshold is None:
             t = self.threshold
         else:
@@ -76,28 +186,204 @@ class BinaryClassification:
 
         # Plot reference line
         plt.plot([0, 1], [0, 1], color='red', lw=linewidth, linestyle='--')
-        plt.axhline(y=idy_thresh, color='black', linestyle=':', lw=linewidth)
-        plt.axvline(x=idx_thresh, color='black', linestyle=':', lw=linewidth)
+        # Plot threshold
+        if plot_threshold:
+            # Plot vertical and horizontal line
+            plt.axhline(y=idy_thresh, color='black', linestyle=':', lw=linewidth)
+            plt.axvline(x=idx_thresh, color='black', linestyle=':', lw=linewidth)
 
-        if idx_thresh > 0.5 and idy_thresh > 0.5:
-            plt.text(x=idx_thresh - x_text_margin, y=idy_thresh - y_text_margin,
-                     s='Threshold : {:.2f}'.format(t))
-        elif idx_thresh <= 0.5 and idy_thresh <= 0.5:
-            plt.text(x=idx_thresh + x_text_margin, y=idy_thresh + y_text_margin,
-                     s='Threshold : {:.2f}'.format(t))
-        elif idx_thresh <= 0.5 < idy_thresh:
-            plt.text(x=idx_thresh + x_text_margin, y=idy_thresh - y_text_margin,
-                     s='Threshold : {:.2f}'.format(t))
-        elif idx_thresh > 0.5 >= idy_thresh:
-            plt.text(x=idx_thresh - x_text_margin, y=idy_thresh + y_text_margin,
-                     s='Threshold : {:.2f}'.format(t))
+            # Plot text threshold
+            if idx_thresh > 0.5 and idy_thresh > 0.5:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh - y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh <= 0.5 and idy_thresh <= 0.5:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh + y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh <= 0.5 < idy_thresh:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh - y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh > 0.5 >= idy_thresh:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh + y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
 
-        plt.plot(idx_thresh, idy_thresh, 'ro')
+            # Plot redpoint of threshold on the ROC curve
+            plt.plot(idx_thresh, idy_thresh, 'ro')
 
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
         plt.title('Receiver Operating Characteristic')
         plt.legend(loc="lower right")
+
+    def plot_precision_recall_curve(self, threshold=None, plot_threshold=True, beta=1, linewidth=2,
+                                    fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7, y_text_margin=0.03,
+                                    x_text_margin=0.2, c_pr_curve='black', c_mean_prec='red', c_thresh='black',
+                                    c_f1_iso='grey', c_thresh_point='red', ls_pr_curve='-', ls_mean_prec='--',
+                                    ls_thresh=':', ls_fscore_iso=':', marker_pr_curve=None,
+                                    title='Precision and Recall Curve'):
+        """
+        Compute and plot the precision-recall curve.
+
+        Note : this implementation is restricted to binary classification only.
+        See MultiClassClassification for multi-classes implementation.
+
+        F1-iso are curve where a given f1-score is constant.
+
+        We also consider the use of F_beta-score, change the parameter beta to use an other f-score.
+        "Two other commonly used F measures are the F_2 measure, which weighs recall higher than
+        precision (by placing more emphasis on false negatives), and the F_0.5 measure, which weighs
+        recall lower than precision (by attenuating the influence of false negatives). (Wiki)"
+
+        Parameters
+        ----------
+        threshold : float, default=0.5
+            Threshold to determnine the rate between positive and negative values of the classification.
+            
+        plot_threshold : boolean, default=True
+            Plot or not precision and recall lines for the given threshold.
+            
+        beta : float, default=1,
+            Set beta to another float to use a different f_beta score. See definition of f_beta-score
+            for more information : https://en.wikipedia.org/wiki/F1_score
+            
+        linewidth : float, default=2
+        
+        fscore_iso : array, list, default=[0.2, 0.4, 0.6, 0.8]
+            List of float f1-score. Set to None or empty list to remove plotting of iso.
+            
+        iso_alpha : float, default=0.7
+            Transparency of iso-f1.
+            
+        y_text_margin : float, default=0.03
+            Margin (y) of text threshold.
+            
+        x_text_margin : float, default=0.2
+            Margin (x) of text threshold.
+            
+        c_pr_curve : string, default='black'
+            Define the color of precision-recall curve.
+            
+        c_mean_prec : string, default='red'
+            Define the color of mean precision line.
+            
+        c_thresh : string, default='black'
+            Define the color of threshold lines.
+            
+        c_f1_iso : string, default='grey'
+            Define the color of iso-f1 curve.
+            
+        c_thresh_point : string, default='red'
+            Define the color of threshold point.
+            
+        ls_pr_curve : string, default='-'
+            Define the linestyle of precision-recall curve.
+            
+        ls_mean_prec : string, default='--'
+            Define the linestyle of mean precision line.
+            
+        ls_thresh : string, default=':'
+            Define the linestyle of threshold lines.
+            
+        ls_fscore_iso : string, default=':'
+            Define the linestyle of iso-f1 curve.
+            
+        marker_pr_curve : string, default=None
+            Define the marker of precision-recall curve.
+            
+        title : string, default="Precision and Recall Curve"
+            Set title of the figure.
+
+        Returns
+        -------
+        prec : array, shape = [n_thresholds + 1]
+            Precision values such that element i is the precision of
+            predictions with score >= thresholds[i] and the last element is 1.
+            
+        recall : array, shape = [n_thresholds + 1]
+            Decreasing recall values such that element i is the recall of
+            predictions with score >= thresholds[i] and the last element is 0.
+            
+        thresh : array, shape = [n_thresholds <= len(np.unique(y_pred))]
+            Increasing thresholds on the decision function used to compute
+            precision and recall.
+        """
+
+        # Set f1-iso and threshold parameters
+        if fscore_iso is None:
+            fscore_iso = []
+        if threshold is None:
+            t = self.threshold
+        else:
+            t = threshold
+
+        # List for legends
+        lines, labels = [], []
+
+        # Compute precision and recall
+        prec, recall, thresh = precision_recall_curve(self.y_true, self.y_pred)
+        # Compute area
+        pr_auc = average_precision_score(self.y_true, self.y_pred)
+        # Compute the y & x axis to trace the threshold
+        idx_thresh, idy_thresh = recall[argmin(abs(thresh - t))], prec[argmin(abs(thresh - t))]
+
+        # Plot PR curve
+        l, = plt.plot(recall, prec, color=c_pr_curve, lw=linewidth, linestyle=ls_pr_curve, marker=marker_pr_curve)
+        lines.append(l)
+        labels.append('PR curve (area = {})'.format(round(pr_auc, 2)))
+
+        # Plot mean precision
+        l, = plt.plot([0, 1], [mean(prec), mean(prec)], color=c_mean_prec,
+                      lw=linewidth, linestyle=ls_mean_prec)
+        lines.append(l)
+        labels.append('Mean precision = {}'.format(round(mean(prec), 2)))
+
+        # Fscore-iso
+        if len(fscore_iso) > 0:  # Check to plot or not the fscore-iso
+            for f_score in fscore_iso:
+                x = linspace(0.005, 1, 100)  # Set x range
+                y = f_score * x / (beta ** 2 * x + x - beta ** 2 * f_score)  # Compute fscore-iso using f-score formula
+                l, = plt.plot(x[y >= 0], y[y >= 0], color=c_f1_iso, linestyle=ls_fscore_iso,
+                              alpha=iso_alpha)
+                plt.text(s='f{:s}={:0.1f}'.format(str(beta), f_score), x=0.9, y=y[-10] + 0.02, alpha=iso_alpha)
+            lines.append(l)
+            labels.append('iso-f{:s} curves'.format(str(beta)))
+
+            # Set ylim to see entire iso and to avoid a max ylim really high
+            plt.ylim([0.0, 1.05])
+
+        # Plot threshold
+        if plot_threshold:
+            # Plot vertical and horizontal line
+            plt.axhline(y=idy_thresh, color=c_thresh, linestyle=ls_thresh, lw=linewidth)
+            plt.axvline(x=idx_thresh, color=c_thresh, linestyle=ls_thresh, lw=linewidth)
+
+            # Plot text threshold
+            if idx_thresh > 0.5 and idy_thresh > 0.5:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh - y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh <= 0.5 and idy_thresh <= 0.5:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh + y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh <= 0.5 < idy_thresh:
+                plt.text(x=idx_thresh + x_text_margin, y=idy_thresh - y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+            elif idx_thresh > 0.5 >= idy_thresh:
+                plt.text(x=idx_thresh - x_text_margin, y=idy_thresh + y_text_margin,
+                         s='Threshold : {:.2f}'.format(t))
+
+            # Plot redpoint of threshold on the ROC curve
+            plt.plot(idx_thresh, idy_thresh, marker='o', color=c_thresh_point)
+
+        # Axis and legends
+        plt.xlim([0.0, 1.0])
+        plt.legend(lines, labels)
+        plt.xlabel('Recall')
+        plt.ylabel('Precision')
+        if plot_threshold:
+            plt.title('{} (Threshold = {})'.format(title, round(t, 2)))
+        else:
+            plt.title(title)
+
+        return prec, recall, thresh
 
     def plot_class_distribution(self, threshold=None, alpha=.3, jitter=.3):
         from pandas import DataFrame
@@ -142,7 +428,7 @@ class BinaryClassification:
         print("                   ________________________")
         print("                  |  Classification Report |")
         print("                   ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
-        print(classification_report(self.y_true, y_pred_class, target_names=self.labels))
+        print(classification_report(self.y_true, y_pred_class, target_names=list(map(str, self.labels))))
 
 
 class MultiClassClassification:

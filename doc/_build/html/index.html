@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Welcome to plot_metric’s documentation! &#8212; plot_metric 0.0.4 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-plot-metric-s-documentation">
+<h1>Welcome to plot_metric’s documentation!<a class="headerlink" href="#welcome-to-plot-metric-s-documentation" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="plot_metric.functions.BinaryClassification">
+<em class="property">class </em><code class="sig-prename descclassname">plot_metric.functions.</code><code class="sig-name descname">BinaryClassification</code><span class="sig-paren">(</span><em class="sig-param">y_true</em>, <em class="sig-param">y_pred</em>, <em class="sig-param">labels</em>, <em class="sig-param">threshold=0.5</em>, <em class="sig-param">seaborn_style='darkgrid'</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="plot_metric.functions.BinaryClassification.get_function_parameters">
+<code class="sig-name descname">get_function_parameters</code><span class="sig-paren">(</span><em class="sig-param">function</em>, <em class="sig-param">as_df=False</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.get_function_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to get all available parameters for a given function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>function</strong> (<em>func</em>) – Function parameter’s wanted.</p></li>
+<li><p><strong>as_df</strong> (<em>boolean</em><em>, </em><em>default=False</em>) – Set to True to return a dataframe with parameters instead of dictionnary.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>param_dict</strong> – Dictionnary containing parameters for the given function and their default value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="plot_metric.functions.BinaryClassification.plot_confusion_matrix">
+<code class="sig-name descname">plot_confusion_matrix</code><span class="sig-paren">(</span><em class="sig-param">threshold=None</em>, <em class="sig-param">normalize=False</em>, <em class="sig-param">title='Confusion matrix'</em>, <em class="sig-param">cmap=&lt;matplotlib.colors.LinearSegmentedColormap object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.plot_confusion_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function prints and plots the confusion matrix.
+Normalization can be applied by setting <cite>normalize=True</cite>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="plot_metric.functions.BinaryClassification.plot_precision_recall_curve">
+<code class="sig-name descname">plot_precision_recall_curve</code><span class="sig-paren">(</span><em class="sig-param">threshold=None, plot_threshold=True, beta=1, linewidth=2, fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7, y_text_margin=0.03, x_text_margin=0.2, c_pr_curve='black', c_mean_prec='red', c_thresh='black', c_f1_iso='grey', c_thresh_point='red', ls_pr_curve='-', ls_mean_prec='--', ls_thresh=':', ls_fscore_iso=':', marker_pr_curve=None, title='Precision and Recall Curve'</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.plot_precision_recall_curve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and plot the precision-recall curve.</p>
+<p>Note : this implementation is restricted to binary classification only.
+See MultiClassClassification for multi-classes implementation.</p>
+<p>F1-iso are curve where a given f1-score is constant.</p>
+<p>We also consider the use of F_beta-score, change the parameter beta to use an other f-score.
+“Two other commonly used F measures are the F_2 measure, which weighs recall higher than
+precision (by placing more emphasis on false negatives), and the F_0.5 measure, which weighs
+recall lower than precision (by attenuating the influence of false negatives). (Wiki)”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>default=0.5</em>) – Threshold to determnine the rate between positive and negative values of the classification.</p></li>
+<li><p><strong>plot_threshold</strong> (<em>boolean</em><em>, </em><em>default=True</em>) – Plot or not precision and recall lines for the given threshold.</p></li>
+<li><p><strong>beta</strong> (<em>float</em><em>, </em><em>default=1</em><em>,</em>) – Set beta to another float to use a different f_beta score. See definition of f_beta-score
+for more information : <a class="reference external" href="https://en.wikipedia.org/wiki/F1_score">https://en.wikipedia.org/wiki/F1_score</a></p></li>
+<li><p><strong>linewidth</strong> (<em>float</em><em>, </em><em>default=2</em>) – </p></li>
+<li><p><strong>fscore_iso</strong> (<em>array</em><em>, </em><em>list</em><em>, </em><em>default=</em><em>[</em><em>0.2</em><em>, </em><em>0.4</em><em>, </em><em>0.6</em><em>, </em><em>0.8</em><em>]</em>) – List of float f1-score. Set to None or empty list to remove plotting of iso.</p></li>
+<li><p><strong>iso_alpha</strong> (<em>float</em><em>, </em><em>default=0.7</em>) – Transparency of iso-f1.</p></li>
+<li><p><strong>y_text_margin</strong> (<em>float</em><em>, </em><em>default=0.03</em>) – Margin (y) of text threshold.</p></li>
+<li><p><strong>x_text_margin</strong> (<em>float</em><em>, </em><em>default=0.2</em>) – Margin (x) of text threshold.</p></li>
+<li><p><strong>c_pr_curve</strong> (<em>string</em><em>, </em><em>default='black'</em>) – Define the color of precision-recall curve.</p></li>
+<li><p><strong>c_mean_prec</strong> (<em>string</em><em>, </em><em>default='red'</em>) – Define the color of mean precision line.</p></li>
+<li><p><strong>c_thresh</strong> (<em>string</em><em>, </em><em>default='black'</em>) – Define the color of threshold lines.</p></li>
+<li><p><strong>c_f1_iso</strong> (<em>string</em><em>, </em><em>default='grey'</em>) – Define the color of iso-f1 curve.</p></li>
+<li><p><strong>c_thresh_point</strong> (<em>string</em><em>, </em><em>default='red'</em>) – Define the color of threshold point.</p></li>
+<li><p><strong>ls_pr_curve</strong> (<em>string</em><em>, </em><em>default='-'</em>) – Define the linestyle of precision-recall curve.</p></li>
+<li><p><strong>ls_mean_prec</strong> (<em>string</em><em>, </em><em>default='--'</em>) – Define the linestyle of mean precision line.</p></li>
+<li><p><strong>ls_thresh</strong> (<em>string</em><em>, </em><em>default=':'</em>) – Define the linestyle of threshold lines.</p></li>
+<li><p><strong>ls_fscore_iso</strong> (<em>string</em><em>, </em><em>default=':'</em>) – Define the linestyle of iso-f1 curve.</p></li>
+<li><p><strong>marker_pr_curve</strong> (<em>string</em><em>, </em><em>default=None</em>) – Define the marker of precision-recall curve.</p></li>
+<li><p><strong>title</strong> (<em>string</em><em>, </em><em>default=&quot;Precision and Recall Curve&quot;</em>) – Set title of the figure.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>prec</strong> (<em>array, shape = [n_thresholds + 1]</em>) – Precision values such that element i is the precision of
+predictions with score &gt;= thresholds[i] and the last element is 1.</p></li>
+<li><p><strong>recall</strong> (<em>array, shape = [n_thresholds + 1]</em>) – Decreasing recall values such that element i is the recall of
+predictions with score &gt;= thresholds[i] and the last element is 0.</p></li>
+<li><p><strong>thresh</strong> (<em>array, shape = [n_thresholds &lt;= len(np.unique(y_pred))]</em>) – Increasing thresholds on the decision function used to compute
+precision and recall.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">plot_metric</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Yohann Lereclus.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
