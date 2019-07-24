@@ -106,21 +106,72 @@ class BinaryClassification:
         plt.title('Receiver Operating Characteristic')
         plt.legend(loc="lower right")
 
-    def plot_precision_recall_curve(self, threshold=None, plot_threshold=True,
-                                    linewidth=2, f1_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7,
+    def plot_precision_recall_curve(self, threshold=None, plot_threshold=True, beta=1,
+                                    linewidth=2, fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7,
                                     y_text_margin=0.03, x_text_margin=0.2,
                                     c_pr_curve='black', c_mean_prec='red', c_thresh='black', c_f1_iso='grey', c_thresh_point='red',
                                     ls_pr_curve='-', ls_mean_prec='--', ls_thresh=':', ls_f1_iso=':'):
-        if f1_iso is None:
-            f1_iso = []
+        """
+        Compute and plot the precision-recall curve.
+
+        Note : this implementation is restricted to binary classification only.
+        See MultiClassClassification for multi-classes implementation.
+
+        F1-iso are curve where a given f1-score is constant.
+
+        We also consider the use of F_beta-score, change the parameter beta to use an other f-score.
+        "Two other commonly used F measures are the F_2 measure, which weighs recall higher than
+        precision (by placing more emphasis on false negatives), and the F_0.5 measure, which weighs
+        recall lower than precision (by attenuating the influence of false negatives). (Wiki)"
+
+        Parameters
+        ----------
+        :param threshold: float, default=0.5
+            Threshold to determnine the rate between positive and negative values of the classification.
+        :param plot_threshold: boolean, default=True
+            Plot or not precision and recall lines for the given threshold.
+        :param beta: float, default=1,
+            Set beta to another float to use a different f_beta score. See definition of f_beta-score
+            for more information : https://en.wikipedia.org/wiki/F1_score
+        :param linewidth: float, default=2
+        :param fscore_iso: array, list, default=[0.2, 0.4, 0.6, 0.8]
+            List of float f1-score. Set to None or empty list to remove plotting of iso.
+        :param iso_alpha: float, default=0.7
+            Transparency of iso-f1.
+        :param y_text_margin: float, default=0.03
+            Margin (y) of text threshold.
+        :param x_text_margin: float, default=0.2
+            Margin (x) of text threshold.
+        :param c_pr_curve: string, default='black'
+            Define the color of precision-recall curve.
+        :param c_mean_prec: string, default='red'
+            Define the color of mean precision line.
+        :param c_thresh: string, default='black'
+            Define the color of threshold lines.
+        :param c_f1_iso: string, default='grey'
+            Define the color of iso-f1 curve.
+        :param c_thresh_point: string, default='red'
+            Define the color of threshold point.
+        :param ls_pr_curve: string, default='-'
+            Define the linestyle of precision-recall curve.
+        :param ls_mean_prec: string, default='--'
+            Define the linestyle of mean precision line.
+        :param ls_thresh: string, default=':'
+            Define the linestyle of threshold lines.
+        :param ls_f1_iso: string, default=':'
+            Define the linestyle of iso-f1 curve.
+        """
+
+        # Set f1-iso and threshold parameters
+        if fscore_iso is None:
+            fscore_iso = []
         if threshold is None:
             t = self.threshold
         else:
             t = threshold
 
         # List for legends
-        lines = []
-        labels = []
+        lines, labels = [], []
 
         # Compute precision and recall
         prec, recall, thresh = precision_recall_curve(self.y_true, self.y_pred)
@@ -135,22 +186,22 @@ class BinaryClassification:
         labels.append('PR curve (area = {})'.format(round(pr_auc, 2)))
 
         # Plot mean precision
-        mean_prec = mean(prec)
-        l, = plt.plot([0, 1], [mean_prec, mean_prec], color=c_mean_prec,
+        l, = plt.plot([0, 1], [mean(prec), mean(prec)], color=c_mean_prec,
                       lw=linewidth, linestyle=ls_mean_prec)
         lines.append(l)
-        labels.append('Mean precision = {}'.format(round(mean_prec, 2)))
+        labels.append('Mean precision = {}'.format(round(mean(prec), 2)))
 
-        # F1-iso
-        if len(f1_iso) > 0:
-            for f_score in f1_iso:
-                x = linspace(0.005, 1, 100)
-                y = f_score * x / (2 * x - f_score)
+        # Fscore-iso
+        if len(fscore_iso) > 0: # Check to plot or not the fscore-iso
+            for f_score in fscore_iso:
+                x = linspace(0.005, 1, 100) # Set x range
+                y = f_score * x / (beta**2 * x + x - beta**2 * f_score) # Compute fscore-iso using f-score formula
                 l, = plt.plot(x[y >= 0], y[y >= 0], color=c_f1_iso, linestyle=ls_f1_iso, alpha=iso_alpha)
-                plt.text(s='f1={0:0.1f}'.format(f_score), x=0.9, y=y[-10] + 0.02, alpha=iso_alpha)
+                plt.text(s='f{:s}={0:0.1f}'.format(str(beta), f_score), x=0.9, y=y[-10] + 0.02, alpha=iso_alpha)
             lines.append(l)
-            labels.append('iso-f1 curves')
+            labels.append('iso-f{:s} curves'.format(str(beta)))
 
+            # Set ylim to see entire iso and to avoid a max ylim really high
             plt.ylim([0.0, 1.05])
 
         # Plot threshold
