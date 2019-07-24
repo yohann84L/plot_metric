@@ -15,23 +15,23 @@ sns.set_style('darkgrid')
 
 class BinaryClassification:
     __param_precision_recall_curve = {'threshold': None,
-                                    'plot_threshold': True,
-                                    'beta': 1,
-                                    'linewidth': 2,
-                                    'fscore_iso': [0.2, 0.4, 0.6, 0.8],
-                                    'iso_alpha': 0.7,
-                                    'y_text_margin': 0.03,
-                                    'x_text_margin': 0.2,
-                                    'c_pr_curve': 'black',
-                                    'c_mean_prec': 'red',
-                                    'c_thresh': 'black',
-                                    'c_f1_iso': 'grey',
-                                    'c_thresh_point': 'red',
-                                    'ls_pr_curve': '-',
-                                    'ls_mean_prec': '--',
-                                    'ls_thresh': ':',
-                                    'ls_fscore_iso': ':',
-                                    'marker_pr_curve': None}
+                                      'plot_threshold': True,
+                                      'beta': 1,
+                                      'linewidth': 2,
+                                      'fscore_iso': [0.2, 0.4, 0.6, 0.8],
+                                      'iso_alpha': 0.7,
+                                      'y_text_margin': 0.03,
+                                      'x_text_margin': 0.2,
+                                      'c_pr_curve': 'black',
+                                      'c_mean_prec': 'red',
+                                      'c_thresh': 'black',
+                                      'c_f1_iso': 'grey',
+                                      'c_thresh_point': 'red',
+                                      'ls_pr_curve': '-',
+                                      'ls_mean_prec': '--',
+                                      'ls_thresh': ':',
+                                      'ls_fscore_iso': ':',
+                                      'marker_pr_curve': None}
 
     def __init__(self, y_true, y_pred, labels, threshold=0.5):
         """
@@ -162,13 +162,11 @@ class BinaryClassification:
         plt.title('Receiver Operating Characteristic')
         plt.legend(loc="lower right")
 
-
-    def plot_precision_recall_curve(self, threshold=None, plot_threshold=True, beta=1,
-                                    linewidth=2, fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7,
-                                    y_text_margin=0.03, x_text_margin=0.2,
-                                    c_pr_curve='black', c_mean_prec='red', c_thresh='black', c_f1_iso='grey', c_thresh_point='red',
-                                    ls_pr_curve='-', ls_mean_prec='--', ls_thresh=':', ls_fscore_iso=':',
-                                    marker_pr_curve=None):
+    def plot_precision_recall_curve(self, threshold=None, plot_threshold=True, beta=1, linewidth=2,
+                                    fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7, y_text_margin=0.03,
+                                    x_text_margin=0.2, c_pr_curve='black', c_mean_prec='red', c_thresh='black',
+                                    c_f1_iso='grey', c_thresh_point='red', ls_pr_curve='-', ls_mean_prec='--',
+                                    ls_thresh=':', ls_fscore_iso=':', marker_pr_curve=None):
         """
         Compute and plot the precision-recall curve.
 
@@ -220,6 +218,18 @@ class BinaryClassification:
             Define the linestyle of iso-f1 curve.
         :param marker_pr_curve: string, default=None
             Define the marker of precision-recall curve.
+
+        Returns
+        -------
+        :return prec: array, shape = [n_thresholds + 1]
+            Precision values such that element i is the precision of
+            predictions with score >= thresholds[i] and the last element is 1.
+        :return recall : array, shape = [n_thresholds + 1]
+            Decreasing recall values such that element i is the recall of
+            predictions with score >= thresholds[i] and the last element is 0.
+        :return thresh : array, shape = [n_thresholds <= len(np.unique(y_pred))]
+            Increasing thresholds on the decision function used to compute
+            precision and recall.
         """
 
         # Set f1-iso and threshold parameters
@@ -252,12 +262,12 @@ class BinaryClassification:
         labels.append('Mean precision = {}'.format(round(mean(prec), 2)))
 
         # Fscore-iso
-        if len(fscore_iso) > 0: # Check to plot or not the fscore-iso
+        if len(fscore_iso) > 0:  # Check to plot or not the fscore-iso
             for f_score in fscore_iso:
-                x = linspace(0.005, 1, 100) # Set x range
-                y = f_score * x / (beta**2 * x + x - beta**2 * f_score) # Compute fscore-iso using f-score formula
-                l, = plt.plot(x[y >= 0], y[y >= 0], color=c_f1_iso,linestyle=ls_fscore_iso,
-                                                    alpha=iso_alpha)
+                x = linspace(0.005, 1, 100)  # Set x range
+                y = f_score * x / (beta ** 2 * x + x - beta ** 2 * f_score)  # Compute fscore-iso using f-score formula
+                l, = plt.plot(x[y >= 0], y[y >= 0], color=c_f1_iso, linestyle=ls_fscore_iso,
+                              alpha=iso_alpha)
                 plt.text(s='f{:s}={:0.1f}'.format(str(beta), f_score), x=0.9, y=y[-10] + 0.02, alpha=iso_alpha)
             lines.append(l)
             labels.append('iso-f{:s} curves'.format(str(beta)))
@@ -297,6 +307,8 @@ class BinaryClassification:
             plt.title('Precision and Recall Curve (Threshold = {})'.format(round(t, 2)))
         else:
             plt.title('Precision and Recall Curve')
+
+        return prec, recall, thresh
 
     def plot_class_distribution(self, threshold=None, alpha=.3, jitter=.3):
         from pandas import DataFrame
