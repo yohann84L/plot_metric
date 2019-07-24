@@ -34,7 +34,23 @@ class BinaryClassification:
                                     'marker_pr_curve': None}
 
     def __init__(self, y_true, y_pred, labels, threshold=0.5):
-        '''Constructor of the class'''
+        """
+        Initialize class.
+
+        :param y_true: array, list, shape = [n_sample]
+            True binary labels.
+        :param y_pred: array, list, shape = [n_sample]
+            Target scores, can either be probability estimates of the positive
+            class, confidence values, or non-thresholded measure of decisions
+            (as returned by "decision_function" on some classifiers).
+        :param labels: array, list, shape = [n_class]
+            String or int of to define targeted classes.
+        :param threshold: float [0-1], default=0.5,
+            Classification threshold (or decision threshold).
+            More information about threshold :
+            - https://developers.google.com/machine-learning/crash-course/classification/thresholding
+            - https://en.wikipedia.org/wiki/Threshold_model
+        """
         self.y_true = y_true
         self.y_pred = y_pred
         self.labels = labels
@@ -98,10 +114,6 @@ class BinaryClassification:
         plt.tight_layout()
         plt.ylabel('True label')
         plt.xlabel('Predicted label')
-
-    param = {
-
-    }
 
     def plot_roc(self, threshold=None, plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.3):
         if threshold is None:
