@@ -7,17 +7,55 @@ import colorlover as cl
 import random
 from statistics import mean
 import seaborn as sns
+from pprint import pprint
 
 sns.set_style('darkgrid')
 
 
 class BinaryClassification:
+    __param_precision_recall_curve = {'threshold': None,
+                                    'plot_threshold': True,
+                                    'beta': 1,
+                                    'linewidth': 2,
+                                    'fscore_iso': [0.2, 0.4, 0.6, 0.8],
+                                    'iso_alpha': 0.7,
+                                    'y_text_margin': 0.03,
+                                    'x_text_margin': 0.2,
+                                    'c_pr_curve': 'black',
+                                    'c_mean_prec': 'red',
+                                    'c_thresh': 'black',
+                                    'c_f1_iso': 'grey',
+                                    'c_thresh_point': 'red',
+                                    'ls_pr_curve': '-',
+                                    'ls_mean_prec': '--',
+                                    'ls_thresh': ':',
+                                    'ls_fscore_iso': ':',
+                                    'marker_pr_curve': None}
+
     def __init__(self, y_true, y_pred, labels, threshold=0.5):
         '''Constructor of the class'''
         self.y_true = y_true
         self.y_pred = y_pred
         self.labels = labels
         self.threshold = threshold
+
+    def get_function_parameters(self, function):
+        """
+        Function to get all available parameters for a given function.
+`
+
+        Parameters
+        -------
+        :param function: func
+            Function parameter's wanted.
+
+        Returns
+        -------
+        :return: dict,
+            Dictionnary containing parameters for the given function and their default value.
+        """
+        if function.__name__ is "plot_precision_recall_curve":
+            return self.__param_precision_recall_curve
 
     def plot_confusion_matrix(self, threshold=None, normalize=False, title='Confusion matrix', cmap=plt.cm.Reds):
         """
@@ -106,11 +144,13 @@ class BinaryClassification:
         plt.title('Receiver Operating Characteristic')
         plt.legend(loc="lower right")
 
+
     def plot_precision_recall_curve(self, threshold=None, plot_threshold=True, beta=1,
                                     linewidth=2, fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7,
                                     y_text_margin=0.03, x_text_margin=0.2,
                                     c_pr_curve='black', c_mean_prec='red', c_thresh='black', c_f1_iso='grey', c_thresh_point='red',
-                                    ls_pr_curve='-', ls_mean_prec='--', ls_thresh=':', ls_f1_iso=':'):
+                                    ls_pr_curve='-', ls_mean_prec='--', ls_thresh=':', ls_fscore_iso=':',
+                                    marker_pr_curve=None):
         """
         Compute and plot the precision-recall curve.
 
@@ -158,8 +198,10 @@ class BinaryClassification:
             Define the linestyle of mean precision line.
         :param ls_thresh: string, default=':'
             Define the linestyle of threshold lines.
-        :param ls_f1_iso: string, default=':'
+        :param ls_fscore_iso: string, default=':'
             Define the linestyle of iso-f1 curve.
+        :param marker_pr_curve: string, default=None
+            Define the marker of precision-recall curve.
         """
 
         # Set f1-iso and threshold parameters
@@ -180,8 +222,8 @@ class BinaryClassification:
         # Compute the y & x axis to trace the threshold
         idx_thresh, idy_thresh = recall[argmin(abs(thresh - t))], prec[argmin(abs(thresh - t))]
 
-        # Plot roc curve
-        l, = plt.plot(recall, prec, color=c_pr_curve, lw=linewidth, linestyle=ls_pr_curve)
+        # Plot PR curve
+        l, = plt.plot(recall, prec, color=c_pr_curve, lw=linewidth, linestyle=ls_pr_curve, marker=marker_pr_curve)
         lines.append(l)
         labels.append('PR curve (area = {})'.format(round(pr_auc, 2)))
 
@@ -196,8 +238,9 @@ class BinaryClassification:
             for f_score in fscore_iso:
                 x = linspace(0.005, 1, 100) # Set x range
                 y = f_score * x / (beta**2 * x + x - beta**2 * f_score) # Compute fscore-iso using f-score formula
-                l, = plt.plot(x[y >= 0], y[y >= 0], color=c_f1_iso, linestyle=ls_f1_iso, alpha=iso_alpha)
-                plt.text(s='f{:s}={0:0.1f}'.format(str(beta), f_score), x=0.9, y=y[-10] + 0.02, alpha=iso_alpha)
+                l, = plt.plot(x[y >= 0], y[y >= 0], color=c_f1_iso,linestyle=ls_fscore_iso,
+                                                    alpha=iso_alpha)
+                plt.text(s='f{:s}={:0.1f}'.format(str(beta), f_score), x=0.9, y=y[-10] + 0.02, alpha=iso_alpha)
             lines.append(l)
             labels.append('iso-f{:s} curves'.format(str(beta)))
 
@@ -225,7 +268,7 @@ class BinaryClassification:
                          s='Threshold : {:.2f}'.format(t))
 
             # Plot redpoint of threshold on the ROC curve
-            plt.plot(idx_thresh, idy_thresh, linestyle='o', color=c_thresh_point)
+            plt.plot(idx_thresh, idy_thresh, marker='o', color=c_thresh_point)
 
         # Axis and legends
         plt.xlim([0.0, 1.0])
