@@ -191,6 +191,49 @@ See <a class="reference external" href="https://seaborn.pydata.org/tutorial/aest
 </dd></dl>
 
 <dl class="method">
+<dt id="plot_metric.functions.BinaryClassification.plot_class_distribution">
+<code class="sig-name descname">plot_class_distribution</code><span class="sig-paren">(</span><em class="sig-param">threshold=None</em>, <em class="sig-param">display_prediction=True</em>, <em class="sig-param">alpha=0.5</em>, <em class="sig-param">jitter=0.3</em>, <em class="sig-param">pal_colors=None</em>, <em class="sig-param">display_violin=True</em>, <em class="sig-param">c_violin='white'</em>, <em class="sig-param">strip_marker_size=4</em>, <em class="sig-param">strip_lw_edge=None</em>, <em class="sig-param">strip_c_edge=None</em>, <em class="sig-param">ls_thresh_line=':'</em>, <em class="sig-param">c_thresh_line='red'</em>, <em class="sig-param">lw_thresh_line=2</em>, <em class="sig-param">title=None</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.plot_class_distribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot distribution of the predictions for each classes.</p>
+<p>Note : Threshold here is importante because it define colors for True Positive,
+False Negative, True Nagative and False Positive.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>default=0.5</em>) – Threshold to determnine the rate between positive and negative values of the classification.</p></li>
+<li><p><strong>display_prediction</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Display the point representing each predictions.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>default=0.5</em>) – Transparency of each predicted point.</p></li>
+<li><p><strong>jitter</strong> (<em>float</em><em>, </em><em>default=0.3</em>) – Amount of jitter (only along the categorical axis) to apply. This can be useful when you have many
+points and they overlap, so that it is easier to see the distribution. You can specify the amount
+of jitter (half the width of the uniform random variable support), or just use True for a good default.
+See : <a class="reference external" href="https://seaborn.pydata.org/generated/seaborn.stripplot.html">https://seaborn.pydata.org/generated/seaborn.stripplot.html</a></p></li>
+<li><p><strong>pal_colors</strong> (<em>palette name</em><em>, </em><em>list</em><em>, or </em><em>dict</em><em>, </em><em>optional</em><em>, </em><em>default=</em><em>[</em><em>&quot;#00C853&quot;</em><em>, </em><em>&quot;#FF8A80&quot;</em><em>, </em><em>&quot;#C5E1A5&quot;</em><em>, </em><em>&quot;#D50000&quot;</em><em>]</em>) – Colors to use for the different levels of the hue variable. Should be something that can be interpreted
+by color_palette(), or a dictionary mapping hue levels to matplotlib colors.
+See : <a class="reference external" href="https://seaborn.pydata.org/generated/seaborn.stripplot.html">https://seaborn.pydata.org/generated/seaborn.stripplot.html</a></p></li>
+<li><p><strong>display_violin</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Display violin plot.</p></li>
+<li><p><strong>c_violin</strong> (<em>string</em><em>, </em><em>default='white'</em>) – Color of the violinplot.</p></li>
+<li><p><strong>strip_marker_size</strong> (<em>int</em><em>, </em><em>default='4'</em>) – Size of marker representing predictions.</p></li>
+<li><p><strong>strip_lw_edge</strong> (<em>float</em><em>, </em><em>default=None</em>) – Size of the linewidth for the edge of point prediction.</p></li>
+<li><p><strong>strip_c_edge</strong> (<em>string</em><em>, </em><em>default=None</em>) – Color of the linewidth for the edge of point prediction.</p></li>
+<li><p><strong>ls_thresh_line</strong> (<em>string</em><em>, </em><em>default=':'</em>) – Linestyle for the threshold line.</p></li>
+<li><p><strong>c_thresh_line</strong> (<em>string</em><em>, </em><em>default='red'</em>) – Color for the threshold line.</p></li>
+<li><p><strong>lw_thresh_line</strong> (<em>float</em><em>, </em><em>default=2</em>) – Line width of the threshold line.</p></li>
+<li><p><strong>title</strong> (<em>string</em><em>, </em><em>default=None</em>) – String for the title of the graphic.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>DataFrame with the following column</em></p></li>
+<li><p><em>- True Class</em></p></li>
+<li><p><em>- Predicted Proba</em></p></li>
+<li><p><em>- Predicted Type</em></p></li>
+<li><p><em>- Predicted Class</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="plot_metric.functions.BinaryClassification.plot_confusion_matrix">
 <code class="sig-name descname">plot_confusion_matrix</code><span class="sig-paren">(</span><em class="sig-param">threshold=None</em>, <em class="sig-param">normalize=False</em>, <em class="sig-param">title='Confusion matrix'</em>, <em class="sig-param">cmap=&lt;matplotlib.colors.LinearSegmentedColormap object&gt;</em>, <em class="sig-param">colorbar=True</em>, <em class="sig-param">label_rotation=45</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.plot_confusion_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the confusion matrix.</p>
@@ -266,8 +309,8 @@ precision and recall.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="plot_metric.functions.BinaryClassification.plot_roc">
-<code class="sig-name descname">plot_roc</code><span class="sig-paren">(</span><em class="sig-param">threshold=None</em>, <em class="sig-param">plot_threshold=True</em>, <em class="sig-param">linewidth=2</em>, <em class="sig-param">y_text_margin=0.05</em>, <em class="sig-param">x_text_margin=0.2</em>, <em class="sig-param">c_roc_curve='black'</em>, <em class="sig-param">c_random_guess='red'</em>, <em class="sig-param">c_thresh_lines='black'</em>, <em class="sig-param">ls_roc_curve='-'</em>, <em class="sig-param">ls_thresh_lines=':'</em>, <em class="sig-param">ls_random_guess='--'</em>, <em class="sig-param">title='Receiver Operating Characteristic'</em>, <em class="sig-param">loc_legend='lower_right'</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.plot_roc" title="Permalink to this definition">¶</a></dt>
+<dt id="plot_metric.functions.BinaryClassification.plot_roc_curve">
+<code class="sig-name descname">plot_roc_curve</code><span class="sig-paren">(</span><em class="sig-param">threshold=None</em>, <em class="sig-param">plot_threshold=True</em>, <em class="sig-param">linewidth=2</em>, <em class="sig-param">y_text_margin=0.05</em>, <em class="sig-param">x_text_margin=0.2</em>, <em class="sig-param">c_roc_curve='black'</em>, <em class="sig-param">c_random_guess='red'</em>, <em class="sig-param">c_thresh_lines='black'</em>, <em class="sig-param">ls_roc_curve='-'</em>, <em class="sig-param">ls_thresh_lines=':'</em>, <em class="sig-param">ls_random_guess='--'</em>, <em class="sig-param">title='Receiver Operating Characteristic'</em>, <em class="sig-param">loc_legend='lower right'</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.plot_roc_curve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute and plot the ROC (Receiver Operating Characteristics) curve but also AUC (Area Under The Curve).</p>
 <p>Note : for more information about ROC curve and AUC look at the reference given.</p>
 <p>Moreover, this implementation is restricted to binary classification only.
