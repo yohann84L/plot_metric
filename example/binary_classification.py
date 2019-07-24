@@ -29,32 +29,27 @@ y_pred = clf.predict_proba(X_test)[:,1]
 bc = BinaryClassification(y_test, y_pred, labels=["True", "False"])
 
 
+param_pr_plot = {
+    'c_pr_curve':'blue',
+    'c_mean_prec':'cyan',
+    'c_thresh_lines':'red',
+    'c_f1_iso':'green',
+    'beta': 2,
+}
 
-plt.figure(figsize=(8,8))
+plt.figure(figsize=(15,10))
+plt.subplot2grid(shape=(2,6), loc=(0,0), colspan=2)
+bc.plot_roc_curve()
+plt.subplot2grid((2,6), (0,2), colspan=2)
+bc.plot_precision_recall_curve(**param_pr_plot)
+plt.subplot2grid((2,6), (0,4), colspan=2)
+bc.plot_class_distribution()
+plt.subplot2grid((2,6), (1,1), colspan=2)
 bc.plot_confusion_matrix()
+plt.subplot2grid((2,6), (1,3), colspan=2)
+bc.plot_confusion_matrix(normalize=True)
 plt.show()
 
-# param_pr_plot = {
-#     'c_pr_curve':'blue',
-#     'c_mean_prec':'cyan',
-#     'c_thresh':'red',
-#     'c_f1_iso':'green',
-#     'beta': 2,
-# }
-#
-# plt.figure(figsize=(15,10))
-# plt.subplot2grid(shape=(2,6), loc=(0,0), colspan=2)
-# bc.plot_roc()
-# plt.subplot2grid((2,6), (0,2), colspan=2)
-# bc.plot_precision_recall_curve(**param_pr_plot)
-# plt.subplot2grid((2,6), (0,4), colspan=2)
-# bc.plot_class_distribution()
-# plt.subplot2grid((2,6), (1,1), colspan=2)
-# bc.plot_confusion_matrix()
-# plt.subplot2grid((2,6), (1,3), colspan=2)
-# bc.plot_confusion_matrix(normalize=True)
-# plt.show()
-#
-# #plt.savefig('images/example_binary_classification.png')
-#
-# bc.print_report()
+#plt.savefig('images/example_binary_classification.png')
+
+bc.print_report()

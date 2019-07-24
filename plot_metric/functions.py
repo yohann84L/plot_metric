@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from numpy import newaxis, arange, argmin, unique, concatenate, zeros_like, argmax, linspace
@@ -38,6 +39,7 @@ class BinaryClassification:
         See https://seaborn.pydata.org/tutorial/aesthetics.html#seaborn-figure-styles for more info.
     """
 
+    ### Parameters definition ###
     __param_precision_recall_curve = {'threshold': None,
                                       'plot_threshold': True,
                                       'beta': 1,
@@ -76,7 +78,22 @@ class BinaryClassification:
                          'ls_thresh_lines': ':',
                          'ls_random_guess': '--',
                          'title': 'Receiver Operating Characteristic',
-                         'loc_legend': 'lower_right'}
+                         'loc_legend': 'lower right'}
+
+    __param_class_distribution = {'threshold': None,
+                                  'display_prediction': True,
+                                  'alpha': .5,
+                                  'jitter': .3,
+                                  'pal_colors': None,
+                                  'display_violin': True,
+                                  'c_violin': 'white',
+                                  'strip_marker_size': 4,
+                                  'strip_lw_edge': None,
+                                  'strip_c_edge': None,
+                                  'ls_thresh_line': ':',
+                                  'c_thresh_line': 'red',
+                                  'lw_thresh_line': 2,
+                                  'title': None}
 
     def __init__(self, y_true, y_pred, labels, threshold=0.5, seaborn_style='darkgrid'):
         self.y_true = y_true
@@ -108,6 +125,8 @@ class BinaryClassification:
             param_dict = self.__param_confusion_matrix
         elif function.__name__ is "plot_roc_curve":
             param_dict = self.__param_roc_curve
+        elif function.__name__ is "plot_class_distribution":
+            param_dict = self.__param_class_distribution
         else:
             print("Wrong function given, following functions are available : ")
             for func in filter(lambda x: callable(x), BinaryClassification.__dict__.values()):
@@ -154,7 +173,7 @@ class BinaryClassification:
         y_pred_class = [1 if y_i > t else 0 for y_i in self.y_pred]
 
         # Define the confusion matrix
-        cm = confusion_matrix(self.y_true, y_pred_class, labels=[0,1])
+        cm = confusion_matrix(self.y_true, y_pred_class, labels=[0, 1])
 
         # Normalize matrix if choosen
         if normalize:
@@ -187,7 +206,7 @@ class BinaryClassification:
     def plot_roc_curve(self, threshold=None, plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.2,
                        c_roc_curve='black', c_random_guess='red', c_thresh_lines='black', ls_roc_curve='-',
                        ls_thresh_lines=':', ls_random_guess='--', title='Receiver Operating Characteristic',
-                       loc_legend='lower_right'):
+                       loc_legend='lower right'):
         """
         Compute and plot the ROC (Receiver Operating Characteristics) curve but also AUC (Area Under The Curve).
 
@@ -500,9 +519,75 @@ class BinaryClassification:
 
         return prec, recall, thresh
 
-    def plot_class_distribution(self, threshold=None, alpha=.3, jitter=.3):
-        from pandas import DataFrame
+    def plot_class_distribution(self, threshold=None, display_prediction=True, alpha=.5, jitter=.3, pal_colors=None,
+                                display_violin=True, c_violin='white', strip_marker_size=4, strip_lw_edge=None,
+                                strip_c_edge=None, ls_thresh_line=':', c_thresh_line='red', lw_thresh_line=2,
+                                title=None):
+        """
+        Plot distribution of the predictions for each classes.
 
+        Note : Threshold here is importante because it define colors for True Positive,
+        False Negative, True Nagative and False Positive.
+
+        Parameters
+        ----------
+        threshold : float, default=0.5
+            Threshold to determnine the rate between positive and negative values of the classification.
+
+        display_prediction : bool, default=True
+            Display the point representing each predictions.
+
+        alpha : float, default=0.5
+            Transparency of each predicted point.
+
+        jitter : float, default=0.3
+                Amount of jitter (only along the categorical axis) to apply. This can be useful when you have many
+                points and they overlap, so that it is easier to see the distribution. You can specify the amount
+                of jitter (half the width of the uniform random variable support), or just use True for a good default.
+                See : https://seaborn.pydata.org/generated/seaborn.stripplot.html
+
+        pal_colors : palette name, list, or dict, optional, default=["#00C853", "#FF8A80", "#C5E1A5", "#D50000"]
+            Colors to use for the different levels of the hue variable. Should be something that can be interpreted
+            by color_palette(), or a dictionary mapping hue levels to matplotlib colors.
+            See : https://seaborn.pydata.org/generated/seaborn.stripplot.html
+
+        display_violin : bool, default=True
+            Display violin plot.
+
+        c_violin : string, default='white'
+            Color of the violinplot.
+
+        strip_marker_size : int, default='4'
+            Size of marker representing predictions.
+
+        strip_lw_edge : float, default=None
+            Size of the linewidth for the edge of point prediction.
+
+        strip_c_edge : string, default=None
+            Color of the linewidth for the edge of point prediction.
+
+        ls_thresh_line : string, default=':'
+            Linestyle for the threshold line.
+
+        c_thresh_line : string, default='red'
+            Color for the threshold line.
+
+        lw_thresh_line : float, default=2
+            Line width of the threshold line.
+
+        title : string, default=None
+            String for the title of the graphic.
+
+        Returns
+        -------
+        DataFrame with the following column :
+        - True Class
+        - Predicted Proba
+        - Predicted Type
+        - Predicted Class
+        """
+        if pal_colors is None:
+            pal_colors = ["#00C853", "#FF8A80", "#C5E1A5", "#D50000"]
         if threshold is None:
             t = self.threshold
         else:
@@ -518,17 +603,33 @@ class BinaryClassification:
             elif (row['pred'] < _threshold) & (row['class'] == 0):
                 return 'TN'
 
-        pred_df = DataFrame({'class': self.y_true,
-                             'pred': self.y_pred})
+        pred_df = pd.DataFrame({'class': self.y_true,
+                                'pred': self.y_pred})
 
         pred_df['type'] = pred_df['pred']
         pred_df['type'] = pred_df.apply(lambda x: __compute_thresh(x, t), axis=1)
 
-        sns.set_palette(sns.color_palette("husl", 8))
-        sns.violinplot(x='class', y='pred', data=pred_df, inner=None, color="white", cut=0)
-        sns.stripplot(x='class', y='pred', hue='type', data=pred_df, jitter=jitter, alpha=alpha, size=4)
-        plt.axhline(y=t, color='red')
-        plt.title('Threshold at {:.2f}'.format(t))
+        # Plot violin pred distribution
+        if display_violin:
+            sns.violinplot(x='class', y='pred', data=pred_df, inner=None, color=c_violin, cut=0)
+
+        # Plot prediction distribution
+        if display_prediction:
+            sns.stripplot(x='class', y='pred', hue='type', data=pred_df,
+                          jitter=jitter, alpha=alpha,
+                          size=strip_marker_size, palette=sns.color_palette(pal_colors),
+                          linewidth=strip_lw_edge, edgecolor=strip_c_edge)
+
+        # Plot threshold
+        plt.axhline(y=t, color=c_thresh_line, linewidth=lw_thresh_line, linestyle=ls_thresh_line)
+        if title is None:
+            plt.title('Threshold at {:.2f}'.format(t))
+        else:
+            plt.title(title)
+
+        pred_df['Predicted Class'] = pred_df['pred'].apply(lambda x: self.labels[1] if x >= t else self.labels[0])
+        pred_df.columns = ['True Class', 'Predicted Proba', 'Predicted Type', 'Predicted Class']
+        return pred_df
 
     def print_report(self, threshold=.5):
         from sklearn.metrics import classification_report
