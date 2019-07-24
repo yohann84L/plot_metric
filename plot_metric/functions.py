@@ -37,6 +37,7 @@ class BinaryClassification:
         seaborn : darkgrid, whitegrid, dark, white, and ticks.
         See https://seaborn.pydata.org/tutorial/aesthetics.html#seaborn-figure-styles for more info.
     """
+
     __param_precision_recall_curve = {'threshold': None,
                                       'plot_threshold': True,
                                       'beta': 1,
@@ -167,7 +168,102 @@ class BinaryClassification:
 
         return cm
 
-    def plot_roc(self, threshold=None, plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.3):
+    def plot_roc(self, threshold=None, plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.2,
+                 c_roc_curve='black',  c_random_guess='red', c_thresh_lines='black', ls_roc_curve='-',
+                 ls_thresh_lines=':', ls_random_guess='--', title='Receiver Operating Characteristic',
+                 loc_legend='lower_right'):
+        """
+        Compute and plot the ROC (Receiver Operating Characteristics) curve but also AUC (Area Under The Curve).
+
+        Note : for more information about ROC curve and AUC look at the reference given.
+
+        Moreover, this implementation is restricted to binary classification only.
+        See MultiClassClassification for multi-classes implementation.
+
+        Parameters
+        ----------
+        threshold : float, default=0.5
+
+        plot_threshold : boolean, default=True
+            Plot or not ROC lines for the given threshold.
+
+        linewidth : float, default=2
+
+        y_text_margin : float, default=0.03
+            Margin (y) of text threshold.
+
+        x_text_margin : float, default=0.2
+            Margin (x) of text threshold.
+
+        c_roc_curve : string, default='black'
+            Define the color of ROC curve.
+
+        c_random_guess : string, default='red'
+            Define the color of random guess line.
+
+        c_thresh_lines : string, default='black'
+            Define the color of threshold lines.
+
+        ls_roc_curve : string, default='-'
+            Define the linestyle of ROC curve.
+
+        ls_thresh_lines : string, default=':'
+            Define the linestyle of threshold lines.
+
+        ls_random_guess : string, default='--'
+            Define the linestyle of random guess line.
+
+        title : string, default='Receiver Operating Characteristic'
+            Set title of the figure.
+
+        loc_legend : string, default='loc_legend'
+            Localisation of legend. Available string are the following :
+
+            ================    ================
+            Location String	    Location Code
+            ================    ================
+            'best'	            0
+            'upper right'	    1
+            'upper left'	    2
+            'lower left'	    3
+            'lower right'	    4
+            'right'         	5
+            'center left'	    6
+            'center right'	    7
+            'lower center'	    8
+            'upper center'	    9
+            'center'	        10
+            ================    ================
+
+
+        Returns
+        -------
+        fpr : array, shape = [>2]
+            Increasing false positive rates such that element i is the false
+            positive rate of predictions with score >= thresholds[i].
+
+        tpr : array, shape = [>2]
+            Increasing true positive rates such that element i is the true
+            positive rate of predictions with score >= thresholds[i].
+
+        thresh : array, shape = [n_thresholds]
+            Decreasing thresholds on the decision function used to compute
+            fpr and tpr. `thresholds[0]` represents no instances being predicted
+            and is arbitrarily set to `max(y_score) + 1`.
+
+        auc : float
+
+        References
+        -------
+        .. [1] `Understanding AUC - ROC Curve (article by Sarang Narkhede)
+            <https://towardsdatascience.com/understanding-auc-roc-curve-68b2303cc9c5>`_
+
+        .. [2] `Wikipedia entry for the Receiver operating characteristic
+            <https://en.wikipedia.org/wiki/Receiver_operating_characteristic>`_
+
+        .. [3] `sklearn documentation about roc_curve and auc functions
+            <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_curve.html>`_
+        """
         if threshold is None:
             t = self.threshold
         else:
@@ -175,22 +271,23 @@ class BinaryClassification:
 
         # Compute ROC Curve
         fpr, tpr, thresh = roc_curve(self.y_true, self.y_pred)
+        # Compute AUC
         roc_auc = auc(fpr, tpr)
 
         # Compute the y & x axis to trace the threshold
         idx_thresh, idy_thresh = fpr[argmin(abs(thresh - t))], tpr[argmin(abs(thresh - t))]
 
         # Plot roc curve
-        plt.plot(fpr, tpr, color='black',
-                 lw=linewidth, label='ROC curve (area = %0.2f)' % roc_auc)
+        plt.plot(fpr, tpr, color=c_roc_curve,
+                 lw=linewidth, label='ROC curve (area = %0.2f)' % roc_auc, linestyle=ls_roc_curve)
 
         # Plot reference line
-        plt.plot([0, 1], [0, 1], color='red', lw=linewidth, linestyle='--')
+        plt.plot([0, 1], [0, 1], color=c_random_guess, lw=linewidth, linestyle=ls_random_guess, label="Random guess")
         # Plot threshold
         if plot_threshold:
             # Plot vertical and horizontal line
-            plt.axhline(y=idy_thresh, color='black', linestyle=':', lw=linewidth)
-            plt.axvline(x=idx_thresh, color='black', linestyle=':', lw=linewidth)
+            plt.axhline(y=idy_thresh, color=c_thresh_lines, linestyle=ls_thresh_lines, lw=linewidth)
+            plt.axvline(x=idx_thresh, color=c_thresh_lines, linestyle=ls_thresh_lines, lw=linewidth)
 
             # Plot text threshold
             if idx_thresh > 0.5 and idy_thresh > 0.5:
@@ -211,12 +308,14 @@ class BinaryClassification:
 
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('Receiver Operating Characteristic')
-        plt.legend(loc="lower right")
+        plt.title(title)
+        plt.legend(loc=loc_legend)
+
+        return fpr, tpr, thresh, roc_auc
 
     def plot_precision_recall_curve(self, threshold=None, plot_threshold=True, beta=1, linewidth=2,
                                     fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7, y_text_margin=0.03,
-                                    x_text_margin=0.2, c_pr_curve='black', c_mean_prec='red', c_thresh='black',
+                                    x_text_margin=0.2, c_pr_curve='black', c_mean_prec='red', c_thresh_lines='black',
                                     c_f1_iso='grey', c_thresh_point='red', ls_pr_curve='-', ls_mean_prec='--',
                                     ls_thresh=':', ls_fscore_iso=':', marker_pr_curve=None,
                                     title='Precision and Recall Curve'):
@@ -255,7 +354,7 @@ class BinaryClassification:
             
         y_text_margin : float, default=0.03
             Margin (y) of text threshold.
-            
+
         x_text_margin : float, default=0.2
             Margin (x) of text threshold.
             
@@ -353,8 +452,8 @@ class BinaryClassification:
         # Plot threshold
         if plot_threshold:
             # Plot vertical and horizontal line
-            plt.axhline(y=idy_thresh, color=c_thresh, linestyle=ls_thresh, lw=linewidth)
-            plt.axvline(x=idx_thresh, color=c_thresh, linestyle=ls_thresh, lw=linewidth)
+            plt.axhline(y=idy_thresh, color=c_thresh_lines, linestyle=ls_thresh, lw=linewidth)
+            plt.axvline(x=idx_thresh, color=c_thresh_lines, linestyle=ls_thresh, lw=linewidth)
 
             # Plot text threshold
             if idx_thresh > 0.5 and idy_thresh > 0.5:

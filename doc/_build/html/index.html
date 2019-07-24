@@ -217,7 +217,7 @@ available colormap.</p></li>
 
 <dl class="method">
 <dt id="plot_metric.functions.BinaryClassification.plot_precision_recall_curve">
-<code class="sig-name descname">plot_precision_recall_curve</code><span class="sig-paren">(</span><em class="sig-param">threshold=None, plot_threshold=True, beta=1, linewidth=2, fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7, y_text_margin=0.03, x_text_margin=0.2, c_pr_curve='black', c_mean_prec='red', c_thresh='black', c_f1_iso='grey', c_thresh_point='red', ls_pr_curve='-', ls_mean_prec='--', ls_thresh=':', ls_fscore_iso=':', marker_pr_curve=None, title='Precision and Recall Curve'</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.plot_precision_recall_curve" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_precision_recall_curve</code><span class="sig-paren">(</span><em class="sig-param">threshold=None, plot_threshold=True, beta=1, linewidth=2, fscore_iso=[0.2, 0.4, 0.6, 0.8], iso_alpha=0.7, y_text_margin=0.03, x_text_margin=0.2, c_pr_curve='black', c_mean_prec='red', c_thresh_lines='black', c_f1_iso='grey', c_thresh_point='red', ls_pr_curve='-', ls_mean_prec='--', ls_thresh=':', ls_fscore_iso=':', marker_pr_curve=None, title='Precision and Recall Curve'</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.plot_precision_recall_curve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute and plot the precision-recall curve.</p>
 <p>Note : this implementation is restricted to binary classification only.
 See MultiClassClassification for multi-classes implementation.</p>
@@ -261,6 +261,106 @@ predictions with score &gt;= thresholds[i] and the last element is 0.</p></li>
 precision and recall.</p></li>
 </ul>
 </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="plot_metric.functions.BinaryClassification.plot_roc">
+<code class="sig-name descname">plot_roc</code><span class="sig-paren">(</span><em class="sig-param">threshold=None</em>, <em class="sig-param">plot_threshold=True</em>, <em class="sig-param">linewidth=2</em>, <em class="sig-param">y_text_margin=0.05</em>, <em class="sig-param">x_text_margin=0.2</em>, <em class="sig-param">c_roc_curve='black'</em>, <em class="sig-param">c_random_guess='red'</em>, <em class="sig-param">c_thresh_lines='black'</em>, <em class="sig-param">ls_roc_curve='-'</em>, <em class="sig-param">ls_thresh_lines=':'</em>, <em class="sig-param">ls_random_guess='--'</em>, <em class="sig-param">title='Receiver Operating Characteristic'</em>, <em class="sig-param">loc_legend='lower_right'</em><span class="sig-paren">)</span><a class="headerlink" href="#plot_metric.functions.BinaryClassification.plot_roc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and plot the ROC (Receiver Operating Characteristics) curve but also AUC (Area Under The Curve).</p>
+<p>Note : for more information about ROC curve and AUC look at the reference given.</p>
+<p>Moreover, this implementation is restricted to binary classification only.
+See MultiClassClassification for multi-classes implementation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>default=0.5</em>) – </p></li>
+<li><p><strong>plot_threshold</strong> (<em>boolean</em><em>, </em><em>default=True</em>) – Plot or not ROC lines for the given threshold.</p></li>
+<li><p><strong>linewidth</strong> (<em>float</em><em>, </em><em>default=2</em>) – </p></li>
+<li><p><strong>y_text_margin</strong> (<em>float</em><em>, </em><em>default=0.03</em>) – Margin (y) of text threshold.</p></li>
+<li><p><strong>x_text_margin</strong> (<em>float</em><em>, </em><em>default=0.2</em>) – Margin (x) of text threshold.</p></li>
+<li><p><strong>c_roc_curve</strong> (<em>string</em><em>, </em><em>default='black'</em>) – Define the color of ROC curve.</p></li>
+<li><p><strong>c_random_guess</strong> (<em>string</em><em>, </em><em>default='red'</em>) – Define the color of random guess line.</p></li>
+<li><p><strong>c_thresh_lines</strong> (<em>string</em><em>, </em><em>default='black'</em>) – Define the color of threshold lines.</p></li>
+<li><p><strong>ls_roc_curve</strong> (<em>string</em><em>, </em><em>default='-'</em>) – Define the linestyle of ROC curve.</p></li>
+<li><p><strong>ls_thresh_lines</strong> (<em>string</em><em>, </em><em>default=':'</em>) – Define the linestyle of threshold lines.</p></li>
+<li><p><strong>ls_random_guess</strong> (<em>string</em><em>, </em><em>default='--'</em>) – Define the linestyle of random guess line.</p></li>
+<li><p><strong>title</strong> (<em>string</em><em>, </em><em>default='Receiver Operating Characteristic'</em>) – Set title of the figure.</p></li>
+<li><p><strong>loc_legend</strong> (<em>string</em><em>, </em><em>default='loc_legend'</em>) – <p>Localisation of legend. Available string are the following :</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 48%" />
+<col style="width: 52%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Location String</p></th>
+<th class="head"><p>Location Code</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>’best’</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>’upper right’</p></td>
+<td><p>1</p></td>
+</tr>
+<tr class="row-even"><td><p>’upper left’</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p>’lower left’</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p>’lower right’</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p>’right’</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-even"><td><p>’center left’</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>’center right’</p></td>
+<td><p>7</p></td>
+</tr>
+<tr class="row-even"><td><p>’lower center’</p></td>
+<td><p>8</p></td>
+</tr>
+<tr class="row-odd"><td><p>’upper center’</p></td>
+<td><p>9</p></td>
+</tr>
+<tr class="row-even"><td><p>’center’</p></td>
+<td><p>10</p></td>
+</tr>
+</tbody>
+</table>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>fpr</strong> (<em>array, shape = [&gt;2]</em>) – Increasing false positive rates such that element i is the false
+positive rate of predictions with score &gt;= thresholds[i].</p></li>
+<li><p><strong>tpr</strong> (<em>array, shape = [&gt;2]</em>) – Increasing true positive rates such that element i is the true
+positive rate of predictions with score &gt;= thresholds[i].</p></li>
+<li><p><strong>thresh</strong> (<em>array, shape = [n_thresholds]</em>) – Decreasing thresholds on the decision function used to compute
+fpr and tpr. <cite>thresholds[0]</cite> represents no instances being predicted
+and is arbitrarily set to <cite>max(y_score) + 1</cite>.</p></li>
+<li><p><strong>auc</strong> (<em>float</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="footnote brackets">
+<dt class="label" id="id1"><span class="brackets">1</span></dt>
+<dd><p><a class="reference external" href="https://towardsdatascience.com/understanding-auc-roc-curve-68b2303cc9c5">Understanding AUC - ROC Curve (article by Sarang Narkhede)</a></p>
+</dd>
+<dt class="label" id="id2"><span class="brackets">2</span></dt>
+<dd><p><a class="reference external" href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">Wikipedia entry for the Receiver operating characteristic</a></p>
+</dd>
+<dt class="label" id="id3"><span class="brackets">3</span></dt>
+<dd><p><a class="reference external" href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_curve.html">sklearn documentation about roc_curve and auc functions</a></p>
 </dd>
 </dl>
 </dd></dl>
