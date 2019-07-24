@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from numpy import newaxis, arange, argmin, unique, concatenate, zeros_like, argmax, linspace
 from scipy import interp
@@ -9,8 +11,6 @@ from statistics import mean
 import seaborn as sns
 from pprint import pprint
 import pandas as pd
-
-sns.set_style('darkgrid')
 
 
 class BinaryClassification:
@@ -33,77 +33,127 @@ class BinaryClassification:
                                       'ls_fscore_iso': ':',
                                       'marker_pr_curve': None}
 
-    def __init__(self, y_true, y_pred, labels, threshold=0.5):
+    __param_confusion_matrix = {'threshold': None,
+                                'normalize': False,
+                                'title': 'Confusion matrix',
+                                'cmap': plt.cm.Reds,
+                                'colorbar': True,
+                                'label_rotation': 45}
+
+    def __init__(self, y_true, y_pred, labels, threshold=0.5, seaborn_style='darkgrid'):
         """
         Initialize class.
 
-        :param y_true: array, list, shape = [n_sample]
+        Parameters
+        ----------
+        y_true : array, list, shape = [n_sample]
             True binary labels.
-        :param y_pred: array, list, shape = [n_sample]
+        y_pred : array, list, shape = [n_sample]
             Target scores, can either be probability estimates of the positive
             class, confidence values, or non-thresholded measure of decisions
             (as returned by "decision_function" on some classifiers).
-        :param labels: array, list, shape = [n_class]
+        labels : array, list, shape = [n_class]
             String or int of to define targeted classes.
-        :param threshold: float [0-1], default=0.5,
+        threshold : float [0-1], default=0.5,
             Classification threshold (or decision threshold).
             More information about threshold :
             - https://developers.google.com/machine-learning/crash-course/classification/thresholding
             - https://en.wikipedia.org/wiki/Threshold_model
+        seaborn_style : 'string'
+            Set the style of seaborn library, preset available with
+            seaborn : darkgrid, whitegrid, dark, white, and ticks.
+            See https://seaborn.pydata.org/tutorial/aesthetics.html#seaborn-figure-styles for more info.
         """
         self.y_true = y_true
         self.y_pred = y_pred
         self.labels = labels
         self.threshold = threshold
+        sns.set_style(seaborn_style)
 
     def get_function_parameters(self, function, as_df=False):
         """
         Function to get all available parameters for a given function.
-`
 
         Parameters
-        -------
-        :param function: func
+        ----------
+        function : func
             Function parameter's wanted.
-        :param as_df: boolean, default=False
+        as_df : boolean, default=False
             Set to True to return a dataframe with parameters instead of dictionnary.
 
         Returns
         -------
-        :return: dict,
+        param_dict : dict
             Dictionnary containing parameters for the given function and their default value.
         """
+        param_dict = {}
         if function.__name__ is "plot_precision_recall_curve":
-            if as_df:
-                return pd.DataFrame.from_dict(self.__param_precision_recall_curve, orient='index')
-            else:
-                return self.__param_precision_recall_curve
+            param_dict = self.__param_precision_recall_curve
+        elif function.__name__ is "plot_confusion_matrix":
+            param_dict = self.__param_confusion_matrix
+        else:
+            print("Wrong function given, following functions are available : ")
+            for func in filter(lambda x: callable(x), BinaryClassification.__dict__.values()):
+                print(func.__name__)
+            return [func() for func in filter(lambda x: callable(x), BinaryClassification.__dict__.values())]
 
-    def plot_confusion_matrix(self, threshold=None, normalize=False, title='Confusion matrix', cmap=plt.cm.Reds):
+        if as_df:
+            return pd.DataFrame.from_dict(param_dict, orient='index')
+        else:
+            return param_dict
+
+    def plot_confusion_matrix(self, threshold=None, normalize=False, title='Confusion matrix', cmap=plt.cm.Reds,
+                              colorbar=True, label_rotation=45):
         """
-        This function prints and plots the confusion matrix.
-        Normalization can be applied by setting `normalize=True`.
+        Plots the confusion matrix.
+
+        Parameters
+        ----------
+        threshold : float, default=0.5
+            Threshold to determnine the rate between positive and negative values of the classification.
+        normalize : bool, default=False
+            Set to True to normalize matrix and make matrix coefficient between 0 and 1.
+        title : string, default="Confusion matrix",
+            Set title of the plot.
+        cmap : colormap, default=plt.cm.Reds
+            Colormap of the matrix. See https://matplotlib.org/examples/color/colormaps_reference.html to find all
+            available colormap.
+        colorbar : bool, default=True
+            Display color bar beside matrix.
+        label_rotation : int, default=45
+            Degree of rotation for x_axis labels.
+
+        Returns
+        -------
+        cm : array, shape=[n_classes, n_classes]
+            Return confusion_matrix computed by sklearn.metrics.confusion_matrix
         """
         if threshold is None:
             t = self.threshold
         else:
             t = threshold
 
-        # Define the confusion matrix
+        # Convert prediction probility into class
         y_pred_class = [1 if y_i > t else 0 for y_i in self.y_pred]
-        cm = confusion_matrix(self.y_true, y_pred_class, labels=self.labels)
 
+        # Define the confusion matrix
+        cm = confusion_matrix(self.y_true, y_pred_class, labels=[0,1])
+
+        # Normalize matrix if choosen
         if normalize:
             cm = cm.astype('float') / cm.sum(axis=1)[:, newaxis]
             title = title + ' normalized'
 
+        # Compute plot
         plt.imshow(cm, interpolation='nearest', cmap=cmap)
         plt.title(title)
-        plt.colorbar()
+        if colorbar:
+            plt.colorbar()
         tick_marks = arange(len(self.labels))
-        plt.xticks(tick_marks, self.labels, rotation=45)
+        plt.xticks(tick_marks, self.labels, rotation=label_rotation)
         plt.yticks(tick_marks, self.labels)
 
+        # Display text into matrix
         fmt = '.2f' if normalize else 'd'
         thresh = cm.max() / 2.
         for i, j in product(range(cm.shape[0]), range(cm.shape[1])):
@@ -114,6 +164,8 @@ class BinaryClassification:
         plt.tight_layout()
         plt.ylabel('True label')
         plt.xlabel('Predicted label')
+
+        return cm
 
     def plot_roc(self, threshold=None, plot_threshold=True, linewidth=2, y_text_margin=0.05, x_text_margin=0.3):
         if threshold is None:
