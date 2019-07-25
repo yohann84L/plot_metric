@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name='plot_metric',
-    version='0.0.3',
+    version='0.0.4',
     scripts=['plot_metric_package'],
     author="Yohann Lereclus",
     author_email="lereclus84L@gmail.com",
