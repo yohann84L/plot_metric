@@ -1,6 +1,3 @@
-import matplotlib
-
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from numpy import newaxis, arange, argmin, unique, concatenate, zeros_like, argmax, linspace
 from scipy import interp
@@ -33,10 +30,20 @@ class BinaryClassification:
         More information about threshold :
         - https://developers.google.com/machine-learning/crash-course/classification/thresholding
         - https://en.wikipedia.org/wiki/Threshold_model
-    seaborn_style : 'string'
+    seaborn_style : string, default='darkgrid'
         Set the style of seaborn library, preset available with
         seaborn : darkgrid, whitegrid, dark, white, and ticks.
         See https://seaborn.pydata.org/tutorial/aesthetics.html#seaborn-figure-styles for more info.
+    matplotlib_style : string, default=None
+        Set the style of matplotlib. Find all preset here : https://matplotlib.org/3.1.0/gallery/style_sheets/style_sheets_reference.html
+        Or with the following code :
+
+    .. code:: python
+
+        import matplotlib.style as style
+        style.available
+
+
     """
 
     ### Parameters definition ###
@@ -95,12 +102,14 @@ class BinaryClassification:
                                   'lw_thresh_line': 2,
                                   'title': None}
 
-    def __init__(self, y_true, y_pred, labels, threshold=0.5, seaborn_style='darkgrid'):
+    def __init__(self, y_true, y_pred, labels, threshold=0.5, seaborn_style='darkgrid', matplotlib_style=None):
         self.y_true = y_true
         self.y_pred = y_pred
         self.labels = labels
         self.threshold = threshold
         sns.set_style(seaborn_style)
+        if matplotlib_style is not None:
+            style.use('ggplot')
 
     def get_function_parameters(self, function, as_df=False):
         """
@@ -630,6 +639,120 @@ class BinaryClassification:
         pred_df['Predicted Class'] = pred_df['pred'].apply(lambda x: self.labels[1] if x >= t else self.labels[0])
         pred_df.columns = ['True Class', 'Predicted Proba', 'Predicted Type', 'Predicted Class']
         return pred_df
+
+    def plot_score_distribution(self, threshold=None, ):
+        if threshold is None:
+            t = self.threshold
+        else:
+            t = threshold
+
+        df = pd.DataFrame({'y_true': self.y_true, 'y_pred': self.y_pred})
+
+        TN_pred = list(df[df['y_true'] == 0]['y_pred'])
+        TP_pred = list(df[df['y_true'] == 1]['y_pred'])
+
+        # Plot True Negative predictions
+        ax = sns.distplot(TN_pred, hist=False, color="g",
+                          kde_kws={'shade': True}, label='True Negative')
+        # Plot False Positive predictions using hatch
+        kde_x, kde_y = ax.lines[0].get_data()
+        ax.fill_between(kde_x, kde_y, where=(kde_x > t),
+                        interpolate=True, facecolor="none",
+                        hatch="////", edgecolor="black",
+                        label='False Positive')
+
+        # Plot True Positive predictions
+        ax = sns.distplot(TP_pred, hist=False, color="r",
+                          kde_kws={'shade': True}, label='True Positive')
+        # Plot False Negative predictions using hatch
+        kde_x, kde_y = ax.lines[1].get_data()
+        ax.fill_between(kde_x, kde_y, where=(kde_x <= t),
+                        interpolate=True, facecolor="none",
+                        hatch="\\\\\\\\", edgecolor="black",
+                        label='False Negative')
+
+        # Show legend
+        plt.legend()
+        # Set axis and title
+        plt.xlabel('Predictions probability')
+        plt.xlabel('Predicted observations')
+        plt.title('Distribution of predicted probability')
+        plt.xlim(0, 1)
+
+    def plot_threshold(self, threshold=None, beta=1, title=None,
+                       annotation=True,
+                       bbox_dict=None, bbox=True,
+                       arrow_dict=None, arrow=True):
+        if threshold is None:
+            t = self.threshold
+        else:
+            t = threshold
+
+        precision, recall, _ = precision_recall_curve(self.y_true, self.y_pred)
+        fscore = (1 + beta ** 2) * (precision * recall) / ((beta ** 2 * precision) + recall)
+
+        thresh = linspace(0, 1, len(recall))
+        y_max_fscore, x_max_fscore = max(fscore), thresh[argmax(fscore)]
+
+        opti_thresh = 0
+        for i, t_ in enumerate(thresh):
+            if abs(precision[i] - recall[i]) < 0.01:
+                opti_thresh = t_
+                opti_preci = precision[i]
+                opti_recall = recall[i]
+                break
+
+        # Plot recall
+        sns.lineplot(thresh, recall, label='Recall',
+                     color='green')
+
+        # Plot precision
+        sns.lineplot(thresh, precision, label='Precision',
+                     color='blue')
+
+        # Plot fbeta-score
+        sns.lineplot(thresh, fscore, label='F{:s}-score (max={:.03f})'.format(str(beta), y_max_fscore),
+                     color='red')
+
+        # Plot max fbeta-score
+        plt.plot(x_max_fscore, y_max_fscore, 'ro')
+
+        # Plot threshold
+        plt.axvline(t, linestyle='--', color='black')
+        plt.axvline(opti_thresh, linestyle=':', color='black')
+        plt.plot(opti_thresh, opti_recall, color='black', marker='o', markersize=4)
+        # Plot best rate between prec/recall
+        if annotation:
+            ## Annotation dict :
+            if bbox is True and bbox_dict is None:
+                bbox_dict = dict(
+                    facecolor='none',
+                    edgecolor='black',
+                    boxstyle='round',
+                    alpha=0.4,
+                    pad=0.3)
+            if arrow is True and arrow_dict is None:
+                arrow_dict = dict(
+                    arrowstyle="->",
+                    color='black')
+            plt.annotate(s='Thresh = {:0.2f}\nRecall=Prec={:0.2f}'.format(opti_thresh, opti_recall),
+                         xy=(opti_thresh, opti_recall),
+                         xytext=(opti_thresh + 0.02, opti_recall - 0.2),
+                         bbox=bbox_dict,
+                         arrowprops=arrow_dict
+                         )
+
+        # Limit
+        plt.xlim(0, 1)
+        plt.ylim(0, 1)
+
+        # Plot text
+        if title is None:
+            plt.title('Precision/Recall/F{:s}-score - Threshold Curve'.format(str(beta)))
+        else:
+            plt.title(title)
+        plt.xlabel('Threshold')
+        plt.ylabel('Scores')
 
     def print_report(self, threshold=.5):
         from sklearn.metrics import classification_report
