@@ -680,9 +680,13 @@ class BinaryClassification:
         plt.xlim(0, 1)
 
     def plot_threshold(self, threshold=None, beta=1, title=None,
-                       annotation=True,
-                       bbox_dict=None, bbox=True,
-                       arrow_dict=None, arrow=True):
+                       annotation=True, bbox_dict=None, bbox=True, arrow_dict=None, arrow=True,
+                       plot_fscore=True, plot_recall=True, plot_prec=True, plot_fscore_max=True,
+                       c_recall_line = 'green', lw_recall_line=2, ls_recall_line='-', label_recall='Recall',
+                       marker_recall='',
+                       c_prec_line = 'blue', lw_prec_line=2, ls_prec_line='-', label_prec='Precision', marker_prec='',
+                       c_fscr_line = 'red', lw_fscr_line=2, ls_fscr_line='-', label_fscr=None, marker_fscore='',
+                       marker_fscore_max='o', c_fscore_max='red', markersize_fscore_max=5):
         if threshold is None:
             t = self.threshold
         else:
@@ -695,6 +699,7 @@ class BinaryClassification:
         y_max_fscore, x_max_fscore = max(fscore), thresh[argmax(fscore)]
 
         opti_thresh = 0
+        opti_recall = 0
         for i, t_ in enumerate(thresh):
             if abs(precision[i] - recall[i]) < 0.01:
                 opti_thresh = t_
@@ -703,19 +708,30 @@ class BinaryClassification:
                 break
 
         # Plot recall
-        sns.lineplot(thresh, recall, label='Recall',
-                     color='green')
+        if plot_recall:
+            plt.plot(thresh, recall, label=label_recall,
+                     color=c_recall_line, lw=lw_recall_line,
+                     linestyle=ls_recall_line, marker=marker_recall)
+
 
         # Plot precision
-        sns.lineplot(thresh, precision, label='Precision',
-                     color='blue')
+        if plot_prec:
+            plt.plot(thresh, precision, label=label_prec,
+                     color=c_prec_line, lw=lw_prec_line,
+                     linestyle=ls_prec_line, marker=marker_prec)
 
         # Plot fbeta-score
-        sns.lineplot(thresh, fscore, label='F{:s}-score (max={:.03f})'.format(str(beta), y_max_fscore),
-                     color='red')
+        if plot_fscore:
+            if label_fscr is None:
+                label_fscr='F{:s}-score (max={:.03f})'.format(str(beta), y_max_fscore)
+            plt.plot(thresh, fscore, label=label_fscr,
+                     color=c_fscr_line, lw=lw_fscr_line,
+                     linestyle=ls_fscr_line, marker=marker_fscore)
 
         # Plot max fbeta-score
-        plt.plot(x_max_fscore, y_max_fscore, 'ro')
+        if plot_fscore_max:
+            plt.plot(x_max_fscore, y_max_fscore, marker=marker_fscore_max,
+                     markersize=markersize_fscore_max, color=c_fscore_max)
 
         # Plot threshold
         plt.axvline(t, linestyle='--', color='black')
@@ -752,6 +768,8 @@ class BinaryClassification:
         else:
             plt.title(title)
         plt.xlabel('Threshold')
+        plt.legend()
+        plt.xticks(arange(0, 1, 0.1))
         plt.ylabel('Scores')
 
     def print_report(self, threshold=.5):
