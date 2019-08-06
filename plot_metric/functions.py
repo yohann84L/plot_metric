@@ -102,6 +102,45 @@ class BinaryClassification:
                                   'lw_thresh_line': 2,
                                   'title': None}
 
+    __param_threshold = {'threshold': None,
+                         'beta': 1,
+                         'title': None,
+                         'annotation': True,
+                         'bbox_dict': None,
+                         'bbox': True,
+                         'arrow_dict': None,
+                         'arrow': True,
+                         'plot_fscore': True,
+                         'plot_recall': True,
+                         'plot_prec': True,
+                         'plot_fscore_max': True,
+                         'c_recall_line': 'green',
+                         'lw_recall_line': 2,
+                         'ls_recall_line': '-',
+                         'label_recall': 'Recall',
+                         'marker_recall': '',
+                         'c_prec_line ': 'blue',
+                         'lw_prec_line': 2,
+                         'ls_prec_line': '-',
+                         'label_prec': 'Precision',
+                         'marker_prec': '',
+                         'c_fscr_line ': 'red',
+                         'lw_fscr_line': 2,
+                         'ls_fscr_line': '-',
+                         'label_fscr': None,
+                         'marker_fscr': '',
+                         'marker_fscore_max': 'o',
+                         'c_fscore_max': 'red',
+                         'markersize_fscore_max': 5,
+                         'plot_threshold': True,
+                         'c_thresh_line': 'black',
+                         'lw_thresh_line': 2,
+                         'ls_thresh_line': '--',
+                         'plot_best_threshold': True,
+                         'c_bestthresh_line': 'black',
+                         'lw_bestthresh_line': 1,
+                         'ls_bestthresh_line': ':'}
+
     def __init__(self, y_true, y_pred, labels, threshold=0.5, seaborn_style='darkgrid', matplotlib_style=None):
         self.y_true = y_true
         self.y_pred = y_pred
@@ -136,6 +175,8 @@ class BinaryClassification:
             param_dict = self.__param_roc_curve
         elif function.__name__ is "plot_class_distribution":
             param_dict = self.__param_class_distribution
+        elif function.__name__ is "plot_threshold":
+            param_dict = self.__param_threshold
         else:
             print("Wrong function given, following functions are available : ")
             for func in filter(lambda x: callable(x), BinaryClassification.__dict__.values()):
@@ -684,8 +725,8 @@ class BinaryClassification:
                        plot_fscore=True, plot_recall=True, plot_prec=True, plot_fscore_max=True,
                        c_recall_line='green', lw_recall_line=2, ls_recall_line='-', label_recall='Recall',
                        marker_recall='',
-                       c_prec_line = 'blue', lw_prec_line=2, ls_prec_line='-', label_prec='Precision', marker_prec='',
-                       c_fscr_line = 'red', lw_fscr_line=2, ls_fscr_line='-', label_fscr=None, marker_fscr='',
+                       c_prec_line='blue', lw_prec_line=2, ls_prec_line='-', label_prec='Precision', marker_prec='',
+                       c_fscr_line='red', lw_fscr_line=2, ls_fscr_line='-', label_fscr=None, marker_fscr='',
                        marker_fscore_max='o', c_fscore_max='red', markersize_fscore_max=5,
                        plot_threshold=True, c_thresh_line='black', lw_thresh_line=2, ls_thresh_line='--',
                        plot_best_threshold=True, c_bestthresh_line='black', lw_bestthresh_line=1,
@@ -849,7 +890,6 @@ class BinaryClassification:
                      color=c_recall_line, lw=lw_recall_line,
                      linestyle=ls_recall_line, marker=marker_recall)
 
-
         # Plot precision
         if plot_prec:
             plt.plot(thresh, precision, label=label_prec,
@@ -859,7 +899,7 @@ class BinaryClassification:
         # Plot fbeta-score
         if plot_fscore:
             if label_fscr is None:
-                label_fscr='F{:s}-score (max={:.03f})'.format(str(beta), y_max_fscore)
+                label_fscr = 'F{:s}-score (max={:.03f})'.format(str(beta), y_max_fscore)
             plt.plot(thresh, fscore, label=label_fscr,
                      color=c_fscr_line, lw=lw_fscr_line,
                      linestyle=ls_fscr_line, marker=marker_fscr)
