@@ -682,11 +682,147 @@ class BinaryClassification:
     def plot_threshold(self, threshold=None, beta=1, title=None,
                        annotation=True, bbox_dict=None, bbox=True, arrow_dict=None, arrow=True,
                        plot_fscore=True, plot_recall=True, plot_prec=True, plot_fscore_max=True,
-                       c_recall_line = 'green', lw_recall_line=2, ls_recall_line='-', label_recall='Recall',
+                       c_recall_line='green', lw_recall_line=2, ls_recall_line='-', label_recall='Recall',
                        marker_recall='',
                        c_prec_line = 'blue', lw_prec_line=2, ls_prec_line='-', label_prec='Precision', marker_prec='',
-                       c_fscr_line = 'red', lw_fscr_line=2, ls_fscr_line='-', label_fscr=None, marker_fscore='',
-                       marker_fscore_max='o', c_fscore_max='red', markersize_fscore_max=5):
+                       c_fscr_line = 'red', lw_fscr_line=2, ls_fscr_line='-', label_fscr=None, marker_fscr='',
+                       marker_fscore_max='o', c_fscore_max='red', markersize_fscore_max=5,
+                       plot_threshold=True, c_thresh_line='black', lw_thresh_line=2, ls_thresh_line='--',
+                       plot_best_threshold=True, c_bestthresh_line='black', lw_bestthresh_line=1,
+                       ls_bestthresh_line=':'):
+        """
+        Plot precision - threshold, recall - threshold and fbeta-score - threshold curves.
+        Also plot threshold line for a given threshold and threshold line for the best ratio between precision
+        and recall.
+
+        Parameters
+        ----------
+        threshold : float, default=0.5
+            Threshold to determnine the rate between positive and negative values of the classification.
+
+        beta : float, default=1,
+            Set beta to another float to use a different f_beta score. See definition of f_beta-score
+            for more information : https://en.wikipedia.org/wiki/F1_score
+
+        title : string, default=None
+            String for the title of the graphic.
+
+        annotation : bool, default=True
+            Boolean to display annotation box with theshold, precision and recall score.
+
+        bbox_dict : dict, default={'facecolor': 'none',
+                                'edgecolor': 'black',
+                                'boxstyle': 'round',
+                                'alpha': 0.4,
+                                'pad': 0.3}
+            Set the parameters of the bbox annotation. See matplotlib documentation_ for more information.
+
+        bbox : bool, default=True
+            Boolean to display the bbox around annotation.
+
+        arrow_dict : dict, default={'arrowstyle': "->", 'color': 'black'}
+            Set the parameters of the bbox annotation. See matplotlib documentation_ for more information.
+
+        arrow : bool, default=True
+            Boolean to display the array for the annotation.
+
+        plot_fscore : bool, default=True
+            Boolean to plot the FBeta-Score curve.
+
+        plot_recall : bool, default=True
+            Boolean to plot the recall curve.
+
+        plot_prec : bool, default=True
+            Boolean to plot the precision curve.
+
+        plot_fscore_max : bool, default=True
+            Boolean to plot the point showing fbeta-score max.
+
+        c_recall_line : string, default='green'
+            Color of the recall curve.
+
+        lw_recall_line : float, default=2
+            Linewidth of the recall curve.
+
+        ls_recall_line : string, default='-'
+            Linestyle of the recall curve.
+
+        label_recall : string, default='Recall'
+            Label of the recall curve.
+
+        marker_recall : string, default=''
+            Marker of the recall curve.
+
+        c_prec_line : string, default='green'
+            Color of the prec curve.
+
+        lw_prec_line : float, default=2
+            Linewidth of the prec curve.
+
+        ls_prec_line : string, default='-'
+            Linestyle of the prec curve.
+
+        label_prec : string, default='prec'
+            Label of the prec curve.
+
+        marker_prec : string, default=''
+            Marker of the prec curve.
+
+        c_fscr_line : string, default='green'
+            Color of the fscr curve.
+
+        lw_fscr_line : float, default=2
+            Linewidth of the fscr curve.
+
+        ls_fscr_line : string, default='-'
+            Linestyle of the fscr curve.
+
+        label_fscr : string, default='fscr'
+            Label of the fscr curve.
+
+        marker_fscr : string, default=''
+            Marker of the fscr curve.
+
+        marker_fscore_max : string, default='o'
+            Marker for the fscore max point.
+
+        c_fscore_max : string, default='red'
+            Color for the fscore max point.
+
+        markersize_fscore_max : float, default=5
+            Marker size for the fscore max point.
+
+        plot_threshold : bool, default=True
+            Plot a line at the given threshold.
+
+        c_thresh_line : string, default='black'
+            Color for the threshold line.
+
+        lw_thresh_line : float, default=2
+            Linewidth for the threshold line.
+
+        ls_thresh_line : string, default='--'
+            Linestyle for the threshold line.
+
+        plot_best_threshold : bool, default=True
+            Plot a line at the best threshold (best ratio precision-recall).
+
+        c_bestthresh_line : string, default='black'
+            Color for the best threshold line.
+
+        lw_bestthresh_line : float, default=2
+            Linewidth for the best threshold line.
+
+        ls_bestthresh_line : string, default='--'
+            Linestyle for the best threshold line.
+
+        Returns
+        -------
+
+        References
+        ----------
+        .. _documentation: https://matplotlib.org/users/annotations.html#annotating-with-text-with-box
+        """
         if threshold is None:
             t = self.threshold
         else:
@@ -726,7 +862,7 @@ class BinaryClassification:
                 label_fscr='F{:s}-score (max={:.03f})'.format(str(beta), y_max_fscore)
             plt.plot(thresh, fscore, label=label_fscr,
                      color=c_fscr_line, lw=lw_fscr_line,
-                     linestyle=ls_fscr_line, marker=marker_fscore)
+                     linestyle=ls_fscr_line, marker=marker_fscr)
 
         # Plot max fbeta-score
         if plot_fscore_max:
@@ -734,9 +870,11 @@ class BinaryClassification:
                      markersize=markersize_fscore_max, color=c_fscore_max)
 
         # Plot threshold
-        plt.axvline(t, linestyle='--', color='black')
-        plt.axvline(opti_thresh, linestyle=':', color='black')
-        plt.plot(opti_thresh, opti_recall, color='black', marker='o', markersize=4)
+        if plot_threshold:
+            plt.axvline(t, linestyle=ls_thresh_line, color=c_thresh_line, lw=lw_thresh_line)
+        if plot_best_threshold:
+            plt.axvline(opti_thresh, linestyle=ls_bestthresh_line, color=c_bestthresh_line, lw=lw_bestthresh_line)
+            plt.plot(opti_thresh, opti_recall, color=c_bestthresh_line, marker='o', markersize=4)
         # Plot best rate between prec/recall
         if annotation:
             ## Annotation dict :
