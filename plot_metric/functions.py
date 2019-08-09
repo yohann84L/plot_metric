@@ -681,7 +681,8 @@ class BinaryClassification:
         pred_df.columns = ['True Class', 'Predicted Proba', 'Predicted Type', 'Predicted Class']
         return pred_df
 
-    def plot_score_distribution(self, threshold=None, ):
+    def plot_score_distribution(self, threshold=None, plot_hist_TN=True, kde_ksw_TN={'shade': True},
+                                label_TN='True Negative', c_TN_curve='green'):
         if threshold is None:
             t = self.threshold
         else:
@@ -692,12 +693,14 @@ class BinaryClassification:
         TN_pred = list(df[df['y_true'] == 0]['y_pred'])
         TP_pred = list(df[df['y_true'] == 1]['y_pred'])
 
+
+
         # Plot True Negative predictions
-        ax = sns.distplot(TN_pred, hist=False, color="g",
-                          kde_kws={'shade': True}, label='True Negative')
+        ax = sns.distplot(TN_pred, hist=plot_hist_TN, kde_kws=kde_ksw_TN, label=label_TN,
+                          color=c_TN_curve)
         # Plot False Positive predictions using hatch
         kde_x, kde_y = ax.lines[0].get_data()
-        ax.fill_between(kde_x, kde_y, where=(kde_x > t),
+        ax.fill_between(kde_x, kde_y, where=(kde_x >= t),
                         interpolate=True, facecolor="none",
                         hatch="////", edgecolor="black",
                         label='False Positive')
@@ -712,8 +715,13 @@ class BinaryClassification:
                         hatch="\\\\\\\\", edgecolor="black",
                         label='False Negative')
 
+        # Plot the threshold
+        plt.axvline(t, label='Threshold {:.2f}'.format(t),
+                    color='black',
+                    linestyle=':')
+
         # Show legend
-        plt.legend()
+        plt.legend(loc='best')
         # Set axis and title
         plt.xlabel('Predictions probability')
         plt.xlabel('Predicted observations')
