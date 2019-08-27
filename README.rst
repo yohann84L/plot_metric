@@ -128,7 +128,7 @@ From a custom dictionnary you can set all parameters you want and plot a figures
 
 .. image:: example/images/example_binary_class_PRCurve_custom.png
 
-.. |PyPI-Versions| image:: https://img.shields.io/badge/plot__metric-v0.0.4-blue.svg
+.. |PyPI-Versions| image:: https://img.shields.io/badge/plot__metric-v0.0.6-blue.svg
     :target: https://pypi.org/project/plot-metric/
 
 .. |doc_badge| image:: https://readthedocs.org/projects/plot-metric/badge/?version=latest
