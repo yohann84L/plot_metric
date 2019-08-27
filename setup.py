@@ -5,16 +5,8 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name='plot_metric',
-    version='0.0.5',
+    version='0.0.6',
     scripts=['plot_metric_package'],
-    author="Yohann Lereclus",
-    author_email="lereclus84L@gmail.com",
-    description="A package with tools for plotting metrics",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/yohann84L/plot_metric/",
-    packages=setuptools.find_packages(),
-    py_modules=['plot_metric/functions'],
     install_requires=[
         "scipy>=1.1.0",
         "matplotlib>=3.0.2",
@@ -24,6 +16,14 @@ setuptools.setup(
         "numpy>=1.15.4",
         "scikit_learn>=0.21.2",
     ],
+    author="Yohann Lereclus",
+    author_email="lereclus84L@gmail.com",
+    description="A package with tools for plotting metrics",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/yohann84L/plot_metric/",
+    packages=setuptools.find_packages(),
+    py_modules=['plot_metric/functions'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

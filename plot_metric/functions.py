@@ -3,7 +3,6 @@ from numpy import newaxis, arange, argmin, unique, concatenate, zeros_like, argm
 from scipy import interp
 from sklearn.metrics import confusion_matrix, precision_recall_curve, auc, roc_curve, average_precision_score
 from itertools import product, cycle
-import colorlover as cl
 import random
 from statistics import mean
 import seaborn as sns
@@ -1050,7 +1049,7 @@ class MultiClassClassification:
                  color='navy', linestyle=':', linewidth=linewidth)
 
         random.seed(124)
-        colors = self.__to_hex(cl.scales['6']['qual']['Set1'])
+        colors = ['#e41a1c', '#377eb8', '#4daf4a', '#984ea3', '#ff7f00', '#ffff33']
         random.shuffle(colors)
         for i, color in zip(range(self.n_classes), cycle(colors)):
             plt.plot(fpr[i], tpr[i], color=color, lw=linewidth, alpha=.5,
