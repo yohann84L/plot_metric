@@ -15,6 +15,15 @@ setuptools.setup(
     url="https://github.com/yohann84L/plot_metric/",
     packages=setuptools.find_packages(),
     py_modules=['plot_metric/functions'],
+    install_requires=[
+        "scipy>=1.1.0",
+        "matplotlib>=3.0.2",
+        "colorlover>=0.3.0",
+        "pandas>=0.23.4",
+        "seaborn>=0.9.0",
+        "numpy>=1.15.4",
+        "scikit_learn>=0.21.2",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
