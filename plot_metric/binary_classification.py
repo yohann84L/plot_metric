@@ -615,7 +615,8 @@ class BinaryClassification:
         plt.title('Distribution of predicted probability')
         plt.xlim(0, 1)
 
-        plt.show()
+        if show:
+            plt.show()
 
     def plot_threshold(self, threshold=None, beta=1, title=None,
                        annotation=True, bbox_dict=None, bbox=True, arrow_dict=None, arrow=True,
