@@ -5,12 +5,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 
 from pandas import DataFrame
-from plot_metric.functions import BinaryClassification
+from plot_metric import BinaryClassification
 import matplotlib.pyplot as plt
 import numpy as np
 
 # Generate 2 class dataset
-X, y = make_classification(n_samples=1000, n_classes=2, weights=[1,1], random_state=1)
+X, y = make_classification(n_samples=1000, n_classes=2, weights=[1, 1], random_state=1)
 # split into train/test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=2)
 
