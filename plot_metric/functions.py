@@ -978,9 +978,12 @@ class MultiClassClassification:
         '''Constructor of the class'''
         self.y_true = y_true
         self.y_pred = y_pred
-        self.labels = labels
+        self.labels_names = labels
+        
         self.threshold = threshold
         self.n_classes = len(labels)
+        self.labels = list(range(self.n_classes))
+        
 
     def __to_hex(self, scale):
         ''' converts scale of rgb or hsl strings to list of tuples with rgb integer values. ie,
@@ -1054,7 +1057,7 @@ class MultiClassClassification:
         for i, color in zip(range(self.n_classes), cycle(colors)):
             plt.plot(fpr[i], tpr[i], color=color, lw=linewidth, alpha=.5,
                      label='ROC curve of class {0} (area = {1:0.2f})'
-                           ''.format(i, roc_auc[i]))
+                           ''.format(self.labels_names[i], roc_auc[i]))
 
         if show_threshold:
             plt.plot(idx_thresh.values(), idy_thresh.values(), 'ro')
@@ -1084,8 +1087,8 @@ class MultiClassClassification:
         plt.title(title)
         plt.colorbar()
         tick_marks = arange(len(self.labels))
-        plt.xticks(tick_marks, self.labels, rotation=45)
-        plt.yticks(tick_marks, self.labels)
+        plt.xticks(tick_marks, self.labels_names, rotation=45)
+        plt.yticks(tick_marks, self.labels_names)
 
         fmt = '.2f' if normalize else 'd'
         thresh = cm.max() / 2.
@@ -1106,4 +1109,4 @@ class MultiClassClassification:
         print("                   ________________________")
         print("                  |  Classification Report |")
         print("                   ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
-        print(classification_report(self.y_true, y_pred_class, target_names=list(map(str, self.labels))))
+        print(classification_report(self.y_true, y_pred_class, target_names=list(map(str, self.labels_names))))
