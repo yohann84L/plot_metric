@@ -657,14 +657,18 @@ class BinaryClassification:
 
         pred_df['type'] = pred_df['pred']
         pred_df['type'] = pred_df.apply(lambda x: __compute_thresh(x, t), axis=1)
-
+        
+        pred_df_plot = pred_df.copy(deep=True)
+        pred_df_plot["class"] = pred_df_plot["class"].apply(lambda x: self.labels[x])
+        
+        
         # Plot violin pred distribution
         if display_violin:
-            sns.violinplot(x='class', y='pred', data=pred_df, inner=None, color=c_violin, cut=0)
+            sns.violinplot(x='class', y='pred', data=pred_df_plot, inner=None, color=c_violin, cut=0)
 
         # Plot prediction distribution
         if display_prediction:
-            sns.stripplot(x='class', y='pred', hue='type', data=pred_df,
+            sns.stripplot(x='class', y='pred', hue='type', data=pred_df_plot,
                           jitter=jitter, alpha=alpha,
                           size=strip_marker_size, palette=sns.color_palette(pal_colors),
                           linewidth=strip_lw_edge, edgecolor=strip_c_edge)
