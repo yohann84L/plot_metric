@@ -47,6 +47,7 @@ Train our classifier and predict our test set :
 We can now use ``plot_metric`` to plot ROC Curve, distribution class and classification matrix :
 
 .. code:: python
+    from plot_metric.functions import BinaryClassification
 
     # Visualisation with plot_metric
     bc = BinaryClassification(y_test, y_pred, labels=["Class 1", "Class 2"])
