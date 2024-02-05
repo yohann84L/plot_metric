@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from numpy import newaxis, arange, argmin, unique, concatenate, zeros_like, argmax, linspace
-from scipy import interp
+from scipy.interpolate import interpolate
 from sklearn.metrics import confusion_matrix, precision_recall_curve, auc, roc_curve, average_precision_score
 from itertools import product, cycle
 import random
@@ -1035,7 +1035,7 @@ class MultiClassClassification:
         # Then interpolate all ROC curves at this points
         mean_tpr = zeros_like(all_fpr)
         for i in range(self.n_classes):
-            mean_tpr += interp(all_fpr, fpr[i], tpr[i])
+            mean_tpr += interpolate(all_fpr, fpr[i], tpr[i])
 
         # Average it and compute AUC
         mean_tpr /= self.n_classes
